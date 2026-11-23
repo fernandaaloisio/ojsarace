@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Archivo, DM_Mono } from "next/font/google";
+import { Archivo, Source_Sans_3, DM_Mono } from "next/font/google";
 import "./globals.css";
 import Masthead from "@/components/Masthead";
 import Banner from "@/components/Banner";
@@ -8,13 +8,17 @@ import { revista, paginasNav, paginasTodas } from "@/lib/queries";
 import { usuarioAtual } from "@/lib/auth";
 import { SITE_URL } from "@/lib/text";
 
-const display = Fraunces({
+/* Archivo nos titulos, em peso alto e um pouco estreitada: da a voz grafica
+   da marca sem depender de uma fonte paga. O eixo wdth permite o aperto. */
+const display = Archivo({
   subsets: ["latin", "latin-ext"],
   variable: "--font-display",
-  axes: ["SOFT", "WONK", "opsz"],
+  axes: ["wdth"],
   display: "swap",
 });
-const sans = Archivo({
+/* Source Sans 3 no texto corrido: desenhada para leitura em tela, com
+   numeros e acentuacao solidos, que e o que um artigo cientifico exige. */
+const sans = Source_Sans_3({
   subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
   display: "swap",
@@ -79,12 +83,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const [r, nav, todas, u] = await Promise.all([revista(), paginasNav(), paginasTodas(), usuarioAtual()]);
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    /* As variaveis das fontes vao no <html>, e nao no <body>: os tokens de
+       globals.css sao definidos em :root, que e o proprio <html>. No <body>
+       elas chegavam tarde demais, --sans virava invalido e o navegador caia
+       no serif padrao. */
+    <html lang="pt-BR" suppressHydrationWarning
+          className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
         <link rel="alternate" type="application/rss+xml" title={`${r.title} — últimos artigos`} href="/feed.xml" />
       </head>
-      <body className={`${display.variable} ${sans.variable} ${mono.variable}`}>
+      <body>
         <a href="#conteudo" className="sr">Ir para o conteúdo</a>
         <Banner
           titulo={r.title}

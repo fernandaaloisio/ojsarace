@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Favicon: a marca da ARACÊ sobre o papel. Duas formas só, para
+       continuar legível na aba do navegador. -->
+  <rect width="64" height="64" rx="10" fill="#ffffff"/>
+  <path d="M11 40 A21 21 0 0 1 53 40 Z" fill="#0f4539"/>
+  <rect x="8" y="45" width="48" height="7" rx="1" fill="#b4531f"/>
+</svg>

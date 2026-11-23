@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="Marca da revista ARACÊ">
+  <title>ARACÊ</title>
+  <!--
+    "Aracê" é amanhecer em tupi. A marca é esse gesto reduzido ao essencial:
+    um semicírculo sobre uma linha. Duas formas, sem detalhe interno, para
+    continuar legível a 16 pixels no favicon.
+    Verde institucional no sol, barro quente na linha.
+  -->
+  <path d="M8 40 A24 24 0 0 1 56 40 Z" fill="#0f4539"/>
+  <rect x="4" y="46" width="56" height="7" rx="1" fill="#b4531f"/>
+</svg>

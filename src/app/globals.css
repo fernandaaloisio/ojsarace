@@ -1,39 +1,55 @@
 /* ==========================================================================
-   AURORA - sistema visual
-   Conceito: "aracê" é amanhecer em tupi. O portal trabalha a metáfora da
-   linha do horizonte: réguas finíssimas, luz de nascente como único acento,
-   tipografia de revista impressa e densidade de índice editorial. Nenhum
-   cartão arredondado com sombra, nenhum degradê roxo, nenhum ícone genérico.
+   ARACÊ - sistema visual
+   "Aracê" é amanhecer em tupi. A marca guarda a ideia num gesto geométrico,
+   o arco nascendo sobre a linha, e não numa ilustração: um sinal que funciona
+   a 16 pixels no favicon e a 400 no banner.
+   A organização da leitura segue o que as grandes bases científicas fazem -
+   hierarquia explícita, réguas finas, metadado sempre visível - mas a voz é
+   própria: verde profundo como cor institucional, barro quente como acento,
+   títulos em Archivo apertada e pesada.
+   Nenhum cartão arredondado com sombra, nenhum degradê roxo, nenhum ícone
+   genérico de biblioteca.
    ========================================================================== */
 
 /* ---------- 1. tokens ---------- */
 :root {
-  /* tinta e papel */
-  --paper:        #f6f2ea;
-  --paper-2:      #efe9df;
-  --paper-3:      #e5ddd0;
-  --ink:          #16130f;
-  --ink-2:        #403a33;
-  --ink-3:        #6d655b;
-  --ink-4:        #9b9288;
-  --rule:         #d4cabb;
-  --rule-soft:    #e3dbce;
+  /* superfícies: branco de verdade, com um cinza esverdeado para blocos */
+  --paper:        #ffffff;
+  --paper-2:      #f4f7f5;
+  --paper-3:      #e8ede9;
 
-  /* luz de nascente */
-  --ember:        #b4431c;
-  --ember-deep:   #8a3214;
-  --dawn:         #d99227;
+  /* tinta com fundo verde, para não destoar da cor institucional */
+  --ink:          #111b17;
+  --ink-2:        #2f403a;
+  --ink-3:        #5c6b65;
+  --ink-4:        #8a9690;
+  --rule:         #dde4e0;
+  --rule-soft:    #eaefec;
+
+  /* cor institucional: verde profundo */
+  --marca:        #0f4539;
+  --marca-2:      #0a3129;
+  --marca-3:      #16604e;
+  --marca-veu:    #e6efea;
+
+  /* acento quente: barro. Usado em número, estado e chamada de ação. */
+  --ember:        #b4531f;
+  --ember-deep:   #8d3f16;
+  --dawn:         #d98824;
   --horizon:      #e9c477;
-  --night:        #1d2c3c;
-  --moss:         #44613f;
+  --night:        #0a1512;
+  --moss:         var(--marca-3);
 
-  --accent:       var(--ember);
+  --accent:       var(--marca);
   --accent-ink:   #ffffff;
 
   /* tipografia */
-  --display: var(--font-display), "Fraunces", Georgia, serif;
-  --sans:    var(--font-sans), "Archivo", system-ui, -apple-system, sans-serif;
-  --mono:    var(--font-mono), "DM Mono", ui-monospace, "SF Mono", monospace;
+  /* O fallback dentro do var() importa: sem ele, se a variavel da fonte nao
+     estiver definida neste elemento, o token inteiro vira invalido e o
+     navegador cai no serif padrao em vez de usar a lista de reserva. */
+  --display: var(--font-display, "Archivo"), "Archivo", system-ui, sans-serif;
+  --sans:    var(--font-sans, "Source Sans 3"), "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --mono:    var(--font-mono, "DM Mono"), "DM Mono", ui-monospace, "SF Mono", monospace;
 
   /* medidas */
   --gutter: clamp(1.25rem, 4vw, 3.5rem);
@@ -44,35 +60,40 @@
   /* ritmo tipográfico */
   --step--2: clamp(0.688rem, 0.67rem + 0.09vw, 0.75rem);
   --step--1: clamp(0.8rem, 0.78rem + 0.11vw, 0.875rem);
-  --step-0:  clamp(0.938rem, 0.91rem + 0.14vw, 1rem);
+  --step-0:  clamp(0.975rem, 0.95rem + 0.14vw, 1.05rem);
   --step-1:  clamp(1.125rem, 1.08rem + 0.23vw, 1.25rem);
-  --step-2:  clamp(1.375rem, 1.3rem + 0.38vw, 1.625rem);
-  --step-3:  clamp(1.75rem, 1.6rem + 0.75vw, 2.25rem);
-  --step-4:  clamp(2.25rem, 1.95rem + 1.5vw, 3.25rem);
-  --step-5:  clamp(2.875rem, 2.3rem + 2.9vw, 5rem);
-  --step-6:  clamp(3.5rem, 2.5rem + 5vw, 7.5rem);
+  --step-2:  clamp(1.35rem, 1.27rem + 0.38vw, 1.6rem);
+  --step-3:  clamp(1.65rem, 1.5rem + 0.7vw, 2.1rem);
+  --step-4:  clamp(2.05rem, 1.8rem + 1.3vw, 2.9rem);
+  --step-5:  clamp(2.5rem, 2rem + 2.5vw, 4.2rem);
+  --step-6:  clamp(3rem, 2.2rem + 4vw, 6rem);
   /* altura da barra de navegacao: a barra de secoes do artigo gruda abaixo dela */
-  --altura-barra: 3.1rem;
+  --altura-barra: 3.4rem;
 }
 
 :root[data-tema="noite"] {
-  --paper:        #12161b;
-  --paper-2:      #181d24;
-  --paper-3:      #20262f;
-  --ink:          #eee8dd;
-  --ink-2:        #c3bbae;
-  --ink-3:        #948c80;
-  --ink-4:        #6b6459;
-  --rule:         #2c343e;
-  --rule-soft:    #232a33;
+  --paper:        #0d1512;
+  --paper-2:      #131d19;
+  --paper-3:      #1b2723;
+  --ink:          #e8efea;
+  --ink-2:        #bcc8c2;
+  --ink-3:        #8c9a93;
+  --ink-4:        #66736d;
+  --rule:         #26332e;
+  --rule-soft:    #1c2723;
 
-  --ember:        #e4703f;
-  --ember-deep:   #b8502a;
+  --marca:        #2f8e74;
+  --marca-2:      #246e5a;
+  --marca-3:      #49ab8e;
+  --marca-veu:    #14241f;
+
+  --ember:        #e07a42;
+  --ember-deep:   #b85c2c;
   --dawn:         #e9b25a;
   --horizon:      #8a6a33;
-  --night:        #0c1014;
-  --moss:         #7ba074;
-  --accent-ink:   #12161b;
+  --night:        #070d0b;
+  --accent:       var(--marca-3);
+  --accent-ink:   #0d1512;
 }
 
 /* ---------- 2. base ---------- */
@@ -96,28 +117,20 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* véu de grão: dá textura de papel sem imagem e sem custo de rede */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
-}
-:root[data-tema="noite"] body::before { mix-blend-mode: screen; opacity: 0.05; }
+/* Sem véu de grão: o fundo agora é branco e a textura só turvaria o texto.
+   A identidade vem da tipografia, da cor institucional e dos blocos. */
 
 h1, h2, h3, h4 {
   font-family: var(--display);
-  font-weight: 560;
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 36;
-  line-height: 1.08;
-  letter-spacing: -0.016em;
+  font-weight: 700;
+  /* um aperto leve na largura: deixa o titulo denso sem virar condensada */
+  font-variation-settings: "wdth" 94;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   margin: 0;
   text-wrap: balance;
 }
+h1 { font-weight: 800; letter-spacing: -0.028em; }
 
 p { margin: 0 0 1em; }
 a { color: inherit; text-decoration: none; }
@@ -128,7 +141,7 @@ a { color: inherit; text-decoration: none; }
   border-radius: 1px;
 }
 
-::selection { background: var(--horizon); color: var(--ink); }
+::selection { background: var(--marca-veu); color: var(--ink); }
 
 img, svg { max-width: 100%; display: block; }
 
@@ -144,16 +157,28 @@ img, svg { max-width: 100%; display: block; }
 }
 
 /* etiqueta de seção: o rótulo em versalete que estrutura toda a página */
+/* Rotulo de secao. Nesta identidade ele e um bloco de cor, nao uma linha
+   de texto solta: e o elemento que da ritmo a pagina e separa as secoes. */
 .eyebrow {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: var(--step--2);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.17em;
+  letter-spacing: 0.1em;
   color: var(--ink-3);
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin: 0;
+}
+.eyebrow::before {
+  content: "";
+  flex: none;
+  width: 0.65rem;
+  height: 0.65rem;
+  background: var(--marca);
+  /* quadrado com um canto arredondado: o mesmo gesto da marca */
+  border-radius: 0 0.3rem 0 0;
 }
 .eyebrow::after {
   content: "";
@@ -185,10 +210,10 @@ img, svg { max-width: 100%; display: block; }
   left: var(--sol, 18%);
   top: 50%;
   width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--ember);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: var(--marca);
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 4px color-mix(in oklab, var(--ember) 16%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--marca) 14%, transparent);
 }
 
 /* ---------- 4. botões ---------- */
@@ -210,8 +235,10 @@ img, svg { max-width: 100%; display: block; }
 .btn:hover { background: var(--ink); color: var(--paper); }
 .btn:active { transform: translateY(1px); }
 
-.btn--solid { background: var(--ember); border-color: var(--ember); color: var(--accent-ink); }
-.btn--solid:hover { background: var(--ember-deep); border-color: var(--ember-deep); color: #fff; }
+.btn--solid { background: var(--marca); border-color: var(--marca); color: #ffffff; }
+.btn--solid:hover { background: var(--marca-2); border-color: var(--marca-2); color: #ffffff; }
+:root[data-tema="noite"] .btn--solid { color: var(--night); }
+:root[data-tema="noite"] .btn--solid:hover { background: var(--marca-3); border-color: var(--marca-3); }
 
 .btn--quiet { border-color: var(--rule); color: var(--ink-2); }
 .btn--quiet:hover { background: var(--paper-3); color: var(--ink); border-color: var(--ink-4); }
@@ -242,9 +269,10 @@ img, svg { max-width: 100%; display: block; }
 .marca__nome {
   font-family: var(--display);
   font-size: var(--step-2);
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 48;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-variation-settings: "wdth" 92;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   line-height: 1;
 }
 .marca__sol {
@@ -536,12 +564,14 @@ a.tag:hover { border-color: var(--ember); color: var(--ember); background: color
 }
 
 .artigo__titulo {
-  max-width: 22ch;
-  font-size: var(--step-4);
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 72;
-  font-weight: 580;
-  letter-spacing: -0.028em;
-  line-height: 1.04;
+  max-width: 26ch;
+  font-size: var(--step-3);
+  font-variation-settings: "wdth" 96;
+  font-weight: 700;
+  /* o acervo guarda os titulos em caixa alta: em caixa alta o aperto
+     atrapalha a leitura, entao aqui a letra respira um pouco */
+  letter-spacing: -0.008em;
+  line-height: 1.12;
 }
 .artigo__autores {
   margin-top: 1.5rem;
@@ -1103,7 +1133,7 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 .banner {
   position: relative;
   isolation: isolate;
-  background: var(--night);
+  background: var(--marca-2);
   min-height: clamp(13rem, 24vw, 19rem);
   display: flex;
   align-items: flex-end;
@@ -1124,25 +1154,46 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(to top, rgba(10, 13, 18, 0.88) 0%, rgba(10, 13, 18, 0.55) 38%, rgba(10, 13, 18, 0.12) 72%, rgba(10, 13, 18, 0.3) 100%);
+    linear-gradient(to top, rgba(6, 16, 13, 0.9) 0%, rgba(6, 16, 13, 0.58) 38%, rgba(6, 16, 13, 0.12) 72%, rgba(6, 16, 13, 0.32) 100%);
 }
 .banner__conteudo { padding-block: clamp(1.5rem, 4vw, 2.75rem); width: 100%; }
 
 .banner__marca { display: inline-flex; align-items: center; gap: 0.7rem; }
+/* Sobre o campo escuro do banner o verde some, entao o sol vira claro e a
+   linha fica no barro: a mesma marca, lida no negativo. */
 .banner__sol {
-  width: 13px; height: 13px; border-radius: 50%;
-  background: var(--dawn);
-  box-shadow: 0 0 0 6px rgba(233, 196, 119, 0.18);
+  position: relative;
   flex: none;
+  width: 0.78em;
+  height: 0.62em;
+  align-self: center;
+  margin-bottom: 0.08em;
+}
+.banner__sol::before {
+  content: "";
+  position: absolute;
+  left: 8%; right: 8%; top: 0;
+  height: 72%;
+  background: #f2f7f4;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.banner__sol::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 4%;
+  height: 20%;
+  border-radius: 1px;
+  background: var(--dawn);
 }
 .banner__nome {
   font-family: var(--display);
-  font-size: clamp(2.2rem, 7vw, 4.2rem);
-  font-weight: 650;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.3rem, 7.5vw, 4.6rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
   line-height: 0.95;
-  color: #f7f2e8;
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 120;
+  color: #f4f8f6;
+  font-variation-settings: "wdth" 92;
+  text-transform: uppercase;
 }
 .banner__logo { max-height: clamp(3rem, 8vw, 5.5rem); width: auto; }
 
@@ -1187,12 +1238,40 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   align-items: center;
   gap: 0.45rem;
   font-family: var(--display);
-  font-weight: 650;
+  font-weight: 800;
   font-size: var(--step-0);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variation-settings: "wdth" 92;
   flex: none;
 }
-.barra__sol { width: 8px; height: 8px; border-radius: 50%; background: var(--ember); flex: none; }
+/* A marca desenhada em CSS: semicirculo sobre a linha, as mesmas duas formas
+   do favicon. Em CSS e nao em imagem para acompanhar o tema claro/escuro e
+   herdar o tamanho do texto ao lado. */
+.barra__sol, .marca__sol {
+  position: relative;
+  flex: none;
+  width: 1.05em;
+  height: 0.82em;
+  background: none;
+  border-radius: 0;
+}
+.barra__sol::before, .marca__sol::before {
+  content: "";
+  position: absolute;
+  left: 8%; right: 8%; top: 0;
+  height: 72%;
+  background: var(--marca);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.barra__sol::after, .marca__sol::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 6%;
+  height: 20%;
+  border-radius: 1px;
+  background: var(--ember);
+}
 
 .barra__lista {
   display: flex;
@@ -1287,16 +1366,28 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   padding: 1.1rem 1.2rem 1.25rem;
 }
 .bloco__titulo {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: var(--step--2);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--ink-3);
+  letter-spacing: 0.09em;
+  color: var(--ink-2);
   margin: 0 0 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--marca);
 }
-.bloco--acao { background: var(--ink); border-color: var(--ink); }
-.bloco--acao .bloco__titulo { color: rgba(247, 242, 232, 0.55); }
-.bloco--acao p { color: rgba(247, 242, 232, 0.8); font-size: var(--step--1); line-height: 1.55; }
+/* o bloco de chamada herda a cor institucional, nao o preto */
+.bloco--acao { background: var(--marca); border-color: var(--marca); }
+.bloco--acao .bloco__titulo { color: #ffffff; border-bottom-color: rgba(255, 255, 255, 0.3); }
+.bloco--acao p { color: rgba(255, 255, 255, 0.82); font-size: var(--step--1); line-height: 1.55; }
+/* dentro do bloco verde o botao se inverte, senao some no fundo */
+.bloco--acao .btn--solid {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--marca-2);
+}
+.bloco--acao .btn--solid:hover { background: var(--marca-veu); border-color: var(--marca-veu); color: var(--marca-2); }
+.bloco--acao a.mono { color: #ffffff !important; opacity: 0.85; }
 
 .ficha { display: grid; gap: 0.55rem; margin: 0; font-family: var(--mono); font-size: var(--step--2); }
 .ficha div { display: flex; justify-content: space-between; gap: 0.75rem; border-bottom: 1px solid var(--rule-soft); padding-bottom: 0.5rem; }
@@ -1320,12 +1411,14 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 
 .metricas { border: 1px solid var(--rule); background: var(--paper-2); }
 .metricas__titulo {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: var(--step--2);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--ink-3);
+  letter-spacing: 0.09em;
+  color: var(--ink-2);
   padding: 0.9rem 1.1rem 0.75rem;
+  border-bottom: 2px solid var(--marca);
 }
 .metricas__grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--rule); }
 .metricas__item { padding: 0.9rem 1rem 1rem; border-right: 1px solid var(--rule); }
