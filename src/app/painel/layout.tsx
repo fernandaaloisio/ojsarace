@@ -38,6 +38,7 @@ export default async function PainelLayout({ children }: { children: React.React
             <Link href="/painel/fila">Fila editorial <b>{contagens.abertas}</b></Link>
             <Link href="/painel/fila?f=todas">Todas <b>{contagens.total}</b></Link>
             <Link href="/painel/mensagens">Mensagens <b>{pendentes}</b></Link>
+            <Link href="/painel/citacoes">Citações no Scholar</Link>
             <Link href="/painel/identidade">Identidade visual</Link>
           </>
         )}

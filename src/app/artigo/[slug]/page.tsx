@@ -96,6 +96,28 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
     relacionados(a.id, a.keywords.map((k) => k.keywordId), 5),
     metricasArtigo(a.id),
   ]);
+  // Afiliacoes numeradas, como as revistas fazem: cada afiliacao distinta ganha
+  // um numero e o autor recebe o marcador correspondente. Evita repetir o nome
+  // da instituicao em artigos com muitos autores do mesmo lugar.
+  const afiliacoes: string[] = [];
+  const marcador = new Map<string, number>();
+  for (const x of a.authors) {
+    const af = x.affiliation?.trim();
+    if (!af) continue;
+    if (!marcador.has(af)) {
+      afiliacoes.push(af);
+      marcador.set(af, afiliacoes.length);
+    }
+  }
+
+  // Navegacao entre as secoes do artigo: so entram as que existem neste registro.
+  const secoes = [
+    a.abstract ? { id: "resumo", rotulo: "Resumo" } : null,
+    a.keywords.length > 0 ? { id: "palavras-chave", rotulo: "Palavras-chave" } : null,
+    a.references.length > 0 ? { id: "referencias", rotulo: `Referências (${num(a.references.length)})` } : null,
+    vizinhos.length > 0 ? { id: "relacionados", rotulo: "Artigos relacionados" } : null,
+  ].filter((x): x is { id: string; rotulo: string } => x !== null);
+
   const chaveBib =
     ((autores[0] ?? "arace").split(" ").pop() ?? "arace").toLowerCase().replace(/[^a-z]/g, "") +
     (cita.ano ?? "") + (a.doi?.split("-").pop() ?? "");
@@ -184,7 +206,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             <dd>{IDIOMAS[a.language] ?? a.language}</dd>
           </div>
           <div className="marginalia__bloco">
-            <dt>Citações</dt>
+            <dt>Citações no Crossref</dt>
             <dd className="marginalia__num">{num(a.citationCount)}</dd>
           </div>
           <div className="marginalia__bloco">
@@ -212,6 +234,11 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             {a.authors.map((x) => (
               <span key={x.authorId}>
                 <Link href={`/autor/${x.author.slug}`}>{x.author.name}</Link>
+                {x.affiliation && marcador.has(x.affiliation.trim()) && (
+                  <sup className="autor__af" aria-label={`Afiliação ${marcador.get(x.affiliation.trim())}`}>
+                    {marcador.get(x.affiliation.trim())}
+                  </sup>
+                )}
                 {x.author.orcid && (
                   <a href={`https://orcid.org/${x.author.orcid}`} rel="noreferrer"
                      title={`ORCID ${x.author.orcid}`} aria-label={`ORCID de ${x.author.name}`}
@@ -226,12 +253,40 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             ))}
           </div>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.55rem", margin: "2rem 0 2.25rem" }}>
+          {afiliacoes.length > 0 && (
+            <ol className="afiliacoes" aria-label="Afiliações dos autores">
+              {afiliacoes.map((af, i) => (
+                <li key={af} value={i + 1}>{af}</li>
+              ))}
+            </ol>
+          )}
+
+          {/* linha de identificação da publicação, como nas revistas */}
+          <p className="artigo__meta">
+            {a.issue && (
+              <>
+                <Link href={`/edicao/${a.issue.slug}`}>{a.issue.label}</Link>
+                <span aria-hidden>·</span>
+              </>
+            )}
+            {paginas && <>p. {paginas}<span aria-hidden>·</span></>}
+            {a.elocationId && !paginas && <>{a.elocationId}<span aria-hidden>·</span></>}
+            {a.publishedAt && <>Publicado em {dataLonga(a.publishedAt)}</>}
+            {a.doi && (
+              <>
+                <span aria-hidden>·</span>
+                <a href={`https://doi.org/${a.doi}`} rel="noreferrer">doi:{a.doi}</a>
+              </>
+            )}
+          </p>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.55rem", margin: "1.75rem 0 2rem" }}>
             {a.pdfUrl && (
               <a className="btn btn--solid" href={`/api/baixar/${a.slug}`} rel="noreferrer">
                 Baixar PDF
               </a>
             )}
+            <a className="btn btn--quiet" href="#como-citar">Como citar</a>
             {a.doi && (
               <a className="btn btn--quiet" href={`https://doi.org/${a.doi}`} rel="noreferrer">
                 Resolver DOI
@@ -239,10 +294,17 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             )}
           </div>
 
-          <hr className="horizonte" style={{ ["--sol" as string]: "8%" }} />
+          {/* navegação entre as seções disponíveis neste artigo */}
+          {secoes.length > 1 && (
+            <nav className="artigo__nav" aria-label="Seções deste artigo">
+              {secoes.map((sec) => (
+                <a key={sec.id} href={`#${sec.id}`}>{sec.rotulo}</a>
+              ))}
+            </nav>
+          )}
 
           {a.abstract && (
-            <section style={{ paddingTop: "2rem" }}>
+            <section id="resumo" style={{ paddingTop: "2rem", scrollMarginTop: "6rem" }}>
               <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>Resumo</p>
               <div className="corpo">
                 <p className="primeira">{a.abstract}</p>
@@ -251,7 +313,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           )}
 
           {a.keywords.length > 0 && (
-            <section style={{ paddingTop: "1rem" }}>
+            <section id="palavras-chave" style={{ paddingTop: "1.75rem", scrollMarginTop: "6rem" }}>
               <p className="eyebrow" style={{ marginBottom: "1rem" }}>Palavras-chave</p>
               <div className="filtros" style={{ padding: 0 }}>
                 {a.keywords.map((k) => (
@@ -264,7 +326,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           )}
 
           {a.references.length > 0 && (
-            <section style={{ paddingTop: "2.5rem" }}>
+            <section id="referencias" style={{ paddingTop: "2.5rem", scrollMarginTop: "6rem" }}>
               <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>
                 Referências ({num(a.references.length)})
               </p>
@@ -284,7 +346,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           )}
 
           {vizinhos.length > 0 && (
-            <section style={{ paddingTop: "3rem" }}>
+            <section id="relacionados" style={{ paddingTop: "3rem", scrollMarginTop: "6rem" }}>
               <p className="eyebrow" style={{ marginBottom: "1.25rem" }}>Artigos com temas em comum</p>
               <div className="indice">
                 {vizinhos.map((v) => <ItemArtigo key={v.id} artigo={v} mostrarEdicao />)}
@@ -297,7 +359,9 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
         <div className="aside-artigo">
           {metricas && <MetricasArtigo m={metricas} />}
 
-          <Citar formatos={formatos} />
+          <div id="como-citar" style={{ scrollMarginTop: "6rem" }}>
+            <Citar formatos={formatos} />
+          </div>
 
           <div className="caixa">
             <div className="caixa__titulo">Metadados abertos</div>

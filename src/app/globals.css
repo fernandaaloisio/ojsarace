@@ -51,6 +51,8 @@
   --step-4:  clamp(2.25rem, 1.95rem + 1.5vw, 3.25rem);
   --step-5:  clamp(2.875rem, 2.3rem + 2.9vw, 5rem);
   --step-6:  clamp(3.5rem, 2.5rem + 5vw, 7.5rem);
+  /* altura da barra de navegacao: a barra de secoes do artigo gruda abaixo dela */
+  --altura-barra: 3.1rem;
 }
 
 :root[data-tema="noite"] {
@@ -1176,7 +1178,7 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-height: 3.1rem;
+  min-height: var(--altura-barra);
 }
 
 /* o atalho com o nome só aparece quando a barra já grudou e o banner saiu */
@@ -1357,3 +1359,172 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   border-top: 1px solid var(--rule);
 }
 .metricas__fonte a { color: var(--ink-3); border-bottom: 1px solid var(--rule); }
+
+/* =========================================================================
+   LEITURA DO ARTIGO
+   Afiliações numeradas, linha de identificação da publicação e navegação
+   entre as seções: a organização que as revistas usam para que o leitor
+   saiba onde está antes de começar a ler.
+   ========================================================================= */
+
+.autor__af {
+  font-family: var(--mono);
+  font-size: 0.62em;
+  color: var(--ember);
+  margin-left: 0.12em;
+  vertical-align: super;
+  line-height: 0;
+}
+
+.afiliacoes {
+  margin: 1.1rem 0 0;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: var(--step--1);
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.afiliacoes li::marker { font-family: var(--mono); color: var(--ember); font-size: 0.78em; }
+
+.artigo__meta {
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  color: var(--ink-3);
+  margin-top: 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+  line-height: 1.5;
+}
+.artigo__meta > span[aria-hidden] { color: var(--ink-4); }
+
+/* Barra de seções. Gruda abaixo da barra de navegação ao rolar, para que
+   o leitor volte ao resumo ou às referências de qualquer ponto do texto. */
+.artigo__nav {
+  position: sticky;
+  top: var(--altura-barra, 3.25rem);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.15rem;
+  padding: 0.7rem 0;
+  margin-bottom: 0.5rem;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.artigo__nav a {
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  border-bottom: 0;
+  padding: 0.15rem 0;
+}
+.artigo__nav a:hover { color: var(--ember); }
+.artigo__nav a:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+/* ---------- estados da contagem do Google Acadêmico ---------- */
+
+.metricas__acao { margin-top: 0.9rem; }
+
+.metricas__exemplo {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ember);
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 0.05rem 0.3rem;
+  white-space: nowrap;
+}
+
+.metricas__fonte--extra {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px dotted var(--rule);
+  color: var(--ink-4);
+}
+
+/* =========================================================================
+   BUSCA E ENVIAR ARTIGO NA BARRA
+   O cabeçalho carrega nome, busca, entrar e a chamada para submissão, que é
+   a ação que a revista mais quer que o visitante encontre.
+   ========================================================================= */
+
+/* rótulo lido por leitor de tela, invisível na tela */
+.barra__busca-rot {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.barra__busca {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper);
+  padding-right: 0.15rem;
+  flex: none;
+}
+.barra__busca:focus-within { border-color: var(--ember); }
+.barra__busca input {
+  border: 0;
+  background: none;
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  color: var(--ink);
+  padding: 0.38rem 0.5rem;
+  width: 9.5rem;
+  min-width: 0;
+}
+.barra__busca input:focus { outline: 0; }
+.barra__busca input::placeholder { color: var(--ink-4); }
+.barra__busca button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 0.3rem;
+}
+.barra__busca button:hover { color: var(--ember); }
+
+.barra__enviar {
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--ember);
+  color: var(--paper);
+  border-bottom: 0;
+  padding: 0.42rem 0.75rem;
+  border-radius: 2px;
+  flex: none;
+}
+.barra__enviar:hover { background: var(--ember-deep); color: var(--paper); }
+
+/* A busca da barra sai de cena antes do menu, porque na gaveta ela reaparece
+   em largura inteira; o botão de enviar artigo é o último a sair. */
+@media (max-width: 1180px) {
+  .barra__busca:not(.barra__busca--gaveta) { display: none; }
+}
+@media (max-width: 640px) {
+  .barra__enviar { display: none; }
+}
+
+.barra__busca--gaveta {
+  display: flex;
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+.barra__busca--gaveta input { width: 100%; }

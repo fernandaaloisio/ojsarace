@@ -54,17 +54,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Menu da revista. A ordem segue o que o leitor procura primeiro, e os
  *  nomes são os que a comunidade acadêmica usa. */
+/* Menu curto, com a busca e o botao de enviar artigo na propria barra.
+   Qualis, taxa de publicacao e templates continuam no rodape, em "A revista",
+   que lista as paginas institucionais cadastradas. */
 const NAV = [
-  { href: "/sobre", rotulo: "Sobre" },
-  { href: "/diretrizes", rotulo: "Submissão" },
+  { href: "/sobre", rotulo: "Sobre a revista" },
   { href: "/edicao-atual", rotulo: "Edição atual" },
   { href: "/arquivo", rotulo: "Acervo" },
-  { href: "/qualis", rotulo: "Qualis CAPES" },
-  { href: "/indexacao", rotulo: "Indexadores" },
   { href: "/politica-editorial", rotulo: "Políticas editoriais" },
-  { href: "/taxas", rotulo: "Taxa de publicação" },
-  { href: "/templates", rotulo: "Templates" },
-  { href: "/busca", rotulo: "Busca" },
+  { href: "/indexacao", rotulo: "Indexadores" },
+  { href: "/diretrizes", rotulo: "Submissões" },
 ];
 
 /* Aplica o tema antes da pintura para nao haver piscada de claro para escuro. */

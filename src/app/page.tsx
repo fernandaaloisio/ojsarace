@@ -5,7 +5,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 import {
-  edicaoAtual, panorama, revista, palavrasTop, serieAnual, indexadores, maisLidos,
+  edicaoAtual, panorama, revista, palavrasTop, serieAnual, indexadores, maisLidos, recentes,
 } from "@/lib/queries";
 import ItemArtigo from "@/components/ItemArtigo";
 import CampoBusca from "@/components/CampoBusca";
@@ -14,11 +14,19 @@ import SerieAnual from "@/components/SerieAnual";
 import { num, dataLonga, miniMarkdown, recorte } from "@/lib/text";
 
 export default async function Home() {
-  const [r, p, atual, palavras, serie, idx, lidos] = await Promise.all([
+  const [r, p, atual, palavras, serie, idx, lidos, novos] = await Promise.all([
     revista(), panorama(), edicaoAtual(), palavrasTop(34), serieAnual(), indexadores(), maisLidos(5),
+    recentes(24),
   ]);
 
   const destaque = atual?.artigos.slice(0, 10) ?? [];
+
+  // Em fluxo continuo os artigos mais novos sao, em boa parte, os da edicao
+  // aberta, que o indice logo acima ja mostra. A lista de recentes pula apenas
+  // o que esta visivel ali, para nao repetir os mesmos titulos na mesma tela.
+  const jaNaTela = new Set(destaque.map((x) => x.id));
+  const recentesFora = novos.filter((x) => !jaNaTela.has(x.id)).slice(0, 5);
+
   const ativos = idx.filter((i) => i.status === "ativo");
 
   return (
@@ -78,6 +86,29 @@ export default async function Home() {
                 </Link>
               </p>
             )}
+          </section>
+        )}
+
+        {/* ---------- artigos recentes ---------- */}
+        {recentesFora.length > 0 && (
+          <section style={{ paddingTop: "clamp(2.5rem, 5vw, 3.5rem)" }}>
+            <header style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "baseline",
+                             justifyContent: "space-between", marginBottom: "1.5rem" }}>
+              <div>
+                <p className="eyebrow" style={{ marginBottom: "0.7rem" }}>Artigos recentes</p>
+                <p style={{ color: "var(--ink-3)", margin: 0, maxWidth: "46ch" }}>
+                  Publicação em fluxo contínuo: os artigos entram no portal à medida
+                  que são aprovados, antes do fechamento da edição.
+                </p>
+              </div>
+              <Link className="btn btn--quiet btn--sm" href="/busca?ordem=recentes">
+                Todos por data →
+              </Link>
+            </header>
+
+            <div className="indice">
+              {recentesFora.map((a) => <ItemArtigo key={a.id} artigo={a} mostrarEdicao />)}
+            </div>
           </section>
         )}
 

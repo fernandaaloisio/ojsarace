@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export type ItemNav = { href: string; rotulo: string };
@@ -14,8 +14,17 @@ export default function Masthead({
   titulo, links, autenticado,
 }: { titulo: string; links: ItemNav[]; autenticado: boolean }) {
   const caminho = usePathname();
+  const router = useRouter();
   const [tema, setTema] = useState<"dia" | "noite">("dia");
   const [aberto, setAberto] = useState(false);
+  const [termo, setTermo] = useState("");
+
+  function buscar(e: React.FormEvent) {
+    e.preventDefault();
+    const q = termo.trim();
+    router.push(q ? `/busca?q=${encodeURIComponent(q)}` : "/busca");
+    setAberto(false);
+  }
 
   useEffect(() => {
     setTema((document.documentElement.dataset.tema as "dia" | "noite") ?? "dia");
@@ -49,6 +58,20 @@ export default function Masthead({
         </ul>
 
         <div className="barra__acoes">
+          <form className="barra__busca" role="search" onSubmit={buscar}>
+            <label htmlFor="barra-q" className="barra__busca-rot">Buscar no acervo</label>
+            <input id="barra-q" type="search" value={termo} onChange={(e) => setTermo(e.target.value)}
+                   placeholder="Buscar artigos" autoComplete="off" />
+            <button type="submit" aria-label="Buscar">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
+                <circle cx="6.8" cy="6.8" r="4.6" />
+                <path d="M10.3 10.3 14 14" strokeLinecap="round" />
+              </svg>
+            </button>
+          </form>
+
+          <Link href="/submeter" className="barra__enviar">Enviar artigo</Link>
+
           <Link href={autenticado ? "/painel" : "/entrar"} className="barra__entrar">
             {autenticado ? "Painel" : "Entrar"}
           </Link>
@@ -80,9 +103,21 @@ export default function Masthead({
 
       {aberto && (
         <div className="shell barra__gaveta">
+          <form className="barra__busca barra__busca--gaveta" role="search" onSubmit={buscar}>
+            <label htmlFor="gaveta-q" className="barra__busca-rot">Buscar no acervo</label>
+            <input id="gaveta-q" type="search" value={termo} onChange={(e) => setTermo(e.target.value)}
+                   placeholder="Buscar artigos" autoComplete="off" />
+            <button type="submit" aria-label="Buscar">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
+                <circle cx="6.8" cy="6.8" r="4.6" />
+                <path d="M10.3 10.3 14 14" strokeLinecap="round" />
+              </svg>
+            </button>
+          </form>
           {links.map((l) => (
             <Link key={l.href} href={l.href} aria-current={atual(l.href)}>{l.rotulo}</Link>
           ))}
+          <Link href="/submeter">Enviar artigo</Link>
           <Link href={autenticado ? "/painel" : "/entrar"}>{autenticado ? "Painel" : "Entrar"}</Link>
         </div>
       )}

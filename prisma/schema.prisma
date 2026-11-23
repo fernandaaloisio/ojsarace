@@ -132,6 +132,21 @@ model Article {
   legacyViews   Int       @default(0)
   legacyDownloads Int     @default(0)
 
+  /// Citacoes no Google Academico, conferidas a mao pela editoria.
+  /// O Scholar nao tem API publica, entao o numero nao pode ser colhido:
+  /// alguem da equipe abre a busca, confere que o resultado e o artigo certo
+  /// e registra o que leu em "Citado por". Nulo significa "sem conferencia",
+  /// que e diferente de zero: zero so vale depois de alguem confirmar.
+  scholarCount     Int?
+  scholarCheckedAt DateTime?
+  /// Endereco da lista "Citado por", quando existe.
+  scholarUrl       String?
+  /// Quem conferiu, para a editoria saber a quem perguntar.
+  scholarById      String?
+  scholarBy        User?     @relation("ConfereCitacoes", fields: [scholarById], references: [id])
+  /// Marca valores de demonstracao, exibidos com aviso na pagina publica.
+  scholarDemo      Boolean   @default(false)
+
   searchBlob    String?   // titulo + resumo + autores + palavras-chave, sem acento
 
   createdAt     DateTime  @default(now())
@@ -145,6 +160,7 @@ model Article {
   @@index([issueId])
   @@index([citationCount])
   @@index([viewCount])
+  @@index([journalId, scholarCheckedAt])
 }
 
 model Author {
@@ -305,6 +321,9 @@ model User {
   arquivos     SubmissionFile[]
 
   @@index([email])
+
+  /// Artigos cujas citacoes no Scholar esta pessoa conferiu.
+  citacoesConferidas Article[] @relation("ConfereCitacoes")
 }
 
 /// autor | parecerista | editor | admin

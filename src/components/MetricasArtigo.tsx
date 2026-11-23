@@ -1,32 +1,36 @@
 import { num, dataLonga } from "@/lib/text";
+import { estadoScholar, buscaScholar } from "@/lib/scholar";
 
 export type Metricas = {
   visualizacoes: number;
   downloads: number;
-  citacoes: number;
+  crossref: number;
+  crossrefFonte: string | null;
+  crossrefEm: Date | null;
   temDoi: boolean;
-  fonte: string | null;
-  atualizadoEm: Date | null;
-};
-
-const FONTES: Record<string, { nome: string; url: string }> = {
-  Crossref: { nome: "Crossref", url: "https://www.crossref.org/" },
-  OpenAlex: { nome: "OpenAlex", url: "https://openalex.org/" },
+  doi: string | null;
+  titulo: string;
+  scholar: number | null;
+  scholarEm: Date | null;
+  scholarUrl: string | null;
+  scholarDemo: boolean;
 };
 
 /**
  * Bloco de métricas do artigo, ao lado do botão de download.
  *
  * Visualizações e downloads são contados pelo próprio portal, somados ao que
- * veio do OJS. As citações vêm de uma única fonte, informada ao leitor junto
- * com a data da consulta: somar bases diferentes contaria a mesma citação
- * duas vezes.
+ * veio do OJS. O terceiro indicador é a contagem do Google Acadêmico, que a
+ * editoria confere à mão: o Scholar não tem API, então não há como um script
+ * afirmar o número. Os três estados possíveis estão no comentário de
+ * `src/lib/scholar.ts`.
+ *
+ * O número do Crossref aparece abaixo, em linha separada e com a fonte dita,
+ * nunca somado ao do Scholar: a mesma citação costuma constar nas duas bases.
  */
 export default function MetricasArtigo({ m }: { m: Metricas }) {
-  const fonte = m.fonte ? FONTES[m.fonte] : null;
-
-  // sem DOI, ou DOI não localizado na fonte, não há como afirmar um número
-  const semCitacoes = !m.temDoi || !m.fonte;
+  const estado = estadoScholar(m.scholar);
+  const busca = buscaScholar(m.titulo, m.doi);
 
   return (
     <section className="metricas" aria-label="Métricas do artigo">
@@ -35,39 +39,74 @@ export default function MetricasArtigo({ m }: { m: Metricas }) {
       <div className="metricas__grade">
         <div className="metricas__item">
           <span className="metricas__n">{num(m.visualizacoes)}</span>
-          <span className="metricas__r">Visualizações</span>
+          <span className="metricas__r">Visualizações da página</span>
         </div>
+
         <div className="metricas__item">
           <span className="metricas__n">{num(m.downloads)}</span>
           <span className="metricas__r">Downloads do PDF</span>
         </div>
+
         <div className="metricas__item">
-          {semCitacoes ? (
-            <span className="metricas__sem">Dados de citações indisponíveis</span>
+          {estado === "sem_conferencia" ? (
+            <span className="metricas__sem">Contagem indisponível</span>
           ) : (
             <>
-              <span className="metricas__n">{num(m.citacoes)}</span>
-              <span className="metricas__r">Citações recebidas</span>
+              <span className="metricas__n">{num(m.scholar ?? 0)}</span>
+              <span className="metricas__r">Citações no Google Acadêmico</span>
             </>
           )}
         </div>
       </div>
 
-      <p className="metricas__fonte">
-        {semCitacoes ? (
-          m.temDoi
-            ? "O DOI deste artigo ainda não foi localizado na base de citações consultada."
-            : "Este artigo não tem DOI registrado, por isso não é possível consultar citações."
-        ) : (
-          <>
-            Citações segundo o{" "}
-            {fonte
-              ? <a href={fonte.url} rel="noreferrer">{fonte.nome}</a>
-              : m.fonte}
-            {m.atualizadoEm && <>, consultadas em {dataLonga(m.atualizadoEm)}</>}.
-            {" "}Visualizações e downloads são contados pelo próprio portal.
-          </>
-        )}
+      {/* ---------- estado da contagem do Scholar ---------- */}
+      {estado === "sem_conferencia" ? (
+        <div className="metricas__acao">
+          <p className="metricas__fonte" style={{ marginBottom: "0.7rem" }}>
+            A contagem do Google Acadêmico ainda não foi conferida pela editoria.
+            O Scholar não publica interface de consulta automática, então o número
+            só aparece aqui depois que alguém confirma qual resultado corresponde
+            a este artigo.
+          </p>
+          <a className="btn btn--quiet btn--sm" href={busca} rel="noreferrer nofollow" target="_blank">
+            Buscar artigo no Google Acadêmico
+          </a>
+        </div>
+      ) : (
+        <p className="metricas__fonte">
+          {m.scholarDemo && (
+            <>
+              <strong className="metricas__exemplo">valor de demonstração</strong>{" "}
+            </>
+          )}
+          Citações conforme o campo <em>Citado por</em> do{" "}
+          <a href={busca} rel="noreferrer nofollow" target="_blank">Google Acadêmico</a>
+          {m.scholarEm && <>, conferido em {dataLonga(m.scholarEm)}</>}.
+          {estado === "zero" && " A conferência confirmou que o registro ainda não tem citações."}
+          {m.scholarUrl && (
+            <>
+              {" "}
+              <a href={m.scholarUrl} rel="noreferrer nofollow" target="_blank">
+                Ver trabalhos que citaram este artigo
+              </a>
+              .
+            </>
+          )}
+        </p>
+      )}
+
+      {/* ---------- Crossref, como segunda leitura ---------- */}
+      {m.temDoi && m.crossrefFonte && (
+        <p className="metricas__fonte metricas__fonte--extra">
+          O {m.crossrefFonte} registra {num(m.crossref)}{" "}
+          {m.crossref === 1 ? "citação" : "citações"} para o DOI deste artigo
+          {m.crossrefEm && <>, em consulta de {dataLonga(m.crossrefEm)}</>}. As duas
+          bases são contadas em separado, porque a mesma citação pode estar nas duas.
+        </p>
+      )}
+
+      <p className="metricas__fonte metricas__fonte--extra">
+        Visualizações e downloads são contados pelo próprio portal.
       </p>
     </section>
   );

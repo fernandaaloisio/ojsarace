@@ -294,6 +294,18 @@ export const paginasTodas = cache(async () => {
 /** Artigos mais lidos, pelas visualizações registradas aqui somadas às
  *  herdadas do OJS. Enquanto não houver leitura registrada, o bloco cai
  *  para os mais citados — e a página diz qual critério está em uso. */
+/** Ultimos artigos publicados, independente da edicao a que pertencem.
+ *  A edicao atual mostra o indice fechado; esta lista mostra o que chegou
+ *  por ultimo, que em fluxo continuo nem sempre e a mesma coisa. */
+export const recentes = cache(async (limite = 6) => {
+  return db.article.findMany({
+    where: { publishedAt: { not: null } },
+    orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    take: limite,
+    select: itemSelect,
+  });
+});
+
 export const maisLidos = cache(async (limite = 5) => {
   const comLeitura = await db.article.count({ where: { OR: [{ viewCount: { gt: 0 } }, { legacyViews: { gt: 0 } }] } });
 
@@ -322,15 +334,24 @@ export const metricasArtigo = cache(async (id: string) => {
   const a = await db.article.findUnique({
     where: { id },
     select: { viewCount: true, downloadCount: true, legacyViews: true, legacyDownloads: true,
-              citationCount: true, citationSource: true, citationAt: true, doi: true },
+              citationCount: true, citationSource: true, citationAt: true, doi: true, title: true,
+              scholarCount: true, scholarCheckedAt: true, scholarUrl: true, scholarDemo: true },
   });
   if (!a) return null;
   return {
     visualizacoes: a.viewCount + a.legacyViews,
     downloads: a.downloadCount + a.legacyDownloads,
-    citacoes: a.citationCount,
+    // Crossref, colhido por script: fica como dado secundario, declarado.
+    crossref: a.citationCount,
+    crossrefFonte: a.citationSource,
+    crossrefEm: a.citationAt,
     temDoi: Boolean(a.doi),
-    fonte: a.citationSource,
-    atualizadoEm: a.citationAt,
+    doi: a.doi,
+    titulo: a.title,
+    // Google Academico, conferido a mao pela editoria.
+    scholar: a.scholarCount,
+    scholarEm: a.scholarCheckedAt,
+    scholarUrl: a.scholarUrl,
+    scholarDemo: a.scholarDemo,
   };
 });

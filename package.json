@@ -22,7 +22,8 @@
     "db:deploy": "prisma db push --accept-data-loss",
     "local:sqlite": "node scripts/banco.mjs sqlite",
     "local:postgres": "node scripts/banco.mjs postgres",
-    "producao": "node scripts/configurar-producao.mjs"
+    "producao": "node scripts/configurar-producao.mjs",
+    "exemplo:citacoes": "node scripts/exemplo-citacoes.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.10",
