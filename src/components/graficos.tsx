@@ -242,3 +242,81 @@ export function SerieMensal({ serie }: { serie: Mes[] }) {
     </section>
   );
 }
+
+/* ------------------------------------------------------- ícones da ficha --- */
+
+/**
+ * Sinais da ficha de autoria: pessoa, instituição, e-mail, currículo.
+ * Traço fino e tamanho de texto, para acompanharem a linha sem pesar.
+ */
+export function IconeFicha({ tipo }: { tipo: "pessoa" | "instituicao" | "email" | "lattes" }) {
+  const comum = {
+    width: 13, height: 13, viewBox: "0 0 16 16", fill: "none",
+    stroke: "currentColor", strokeWidth: 1.4,
+    strokeLinecap: "round" as const, strokeLinejoin: "round" as const,
+    "aria-hidden": true, className: "fichaut__ic",
+  };
+
+  if (tipo === "pessoa") {
+    return (
+      <svg {...comum}>
+        <circle cx="8" cy="5.2" r="2.7" />
+        <path d="M2.8 13.6c0-2.6 2.3-4.3 5.2-4.3s5.2 1.7 5.2 4.3" />
+      </svg>
+    );
+  }
+  if (tipo === "instituicao") {
+    return (
+      <svg {...comum}>
+        <path d="M1.6 6.2 8 2.4l6.4 3.8" />
+        <path d="M3.2 6.9v6M6.4 6.9v6M9.6 6.9v6M12.8 6.9v6" />
+        <path d="M1.8 13.6h12.4" />
+      </svg>
+    );
+  }
+  if (tipo === "email") {
+    return (
+      <svg {...comum}>
+        <rect x="1.6" y="3.4" width="12.8" height="9.2" rx="1.2" />
+        <path d="m1.9 4.4 6.1 4.3 6.1-4.3" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...comum}>
+      <circle cx="8" cy="8" r="6.1" />
+      <path d="m6.5 5.4 4.2 2.6-4.2 2.6Z" />
+    </svg>
+  );
+}
+
+/* ---------------------------------------------------- nuvem de termos ----- */
+
+/**
+ * Nuvem de palavras em texto corrido, com o corpo proporcional à frequência.
+ * A constelação em SVG precisa de largura para se ler; numa coluna estreita
+ * esta versão diz a mesma coisa e continua legível.
+ */
+export function NuvemTermos({
+  termos, href,
+}: { termos: { term: string; slug: string; count: number }[]; href: (slug: string) => string }) {
+  if (!termos.length) return null;
+  const max = termos[0].count;
+  const min = termos[termos.length - 1].count || 1;
+  const corpo = (n: number) => {
+    const t = max === min ? 0.5 : (n - min) / (max - min);
+    return 0.74 + t * 0.62; // de 0,74rem a 1,36rem
+  };
+
+  return (
+    <p className="nuvem">
+      {termos.map((t) => (
+        <a key={t.slug} href={href(t.slug)}
+           style={{ fontSize: `${corpo(t.count).toFixed(2)}rem`, opacity: 0.62 + (t.count / max) * 0.38 }}
+           title={`${t.count} artigos`}>
+          {t.term}
+        </a>
+      ))}
+    </p>
+  );
+}

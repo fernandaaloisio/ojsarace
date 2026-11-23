@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { artigoPorSlug, relacionados, metricasArtigo } from "@/lib/queries";
+import { artigoPorSlug, relacionados, metricasArtigo, palavrasTop, maisLidos } from "@/lib/queries";
 import ItemArtigo from "@/components/ItemArtigo";
 import Citar from "@/components/Citar";
 import MetricasArtigo from "@/components/MetricasArtigo";
-import { SerieMensal } from "@/components/graficos";
+import { SerieMensal, IconeFicha, NuvemTermos } from "@/components/graficos";
 import RegistrarLeitura from "@/components/RegistrarLeitura";
 import { abnt, apa, vancouver, bibtex, ris, type CitaDados } from "@/lib/cite";
-import { dataLonga, num, recorte, IDIOMAS, SITE_URL } from "@/lib/text";
+import { dataLonga, num, recorte, listarAutores, SITE_URL } from "@/lib/text";
 
 // Renderizada sob demanda, e não no build: o conteúdo muda quando a editoria
 // publica, e o build não pode depender do banco já estar populado.
@@ -93,10 +93,16 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
   if (!d) notFound();
   const { a, autores, paginas, url, cita } = d;
 
-  const [vizinhos, metricas] = await Promise.all([
+  const [vizinhos, metricas, temas, lidos] = await Promise.all([
     relacionados(a.id, a.keywords.map((k) => k.keywordId), 5),
     metricasArtigo(a.id),
+    palavrasTop(18),
+    maisLidos(5),
   ]);
+
+  // Biografias so existem quando a editoria as escreve: o acervo importado
+  // do OJS nao traz esse campo.
+  const comBio = a.authors.filter((x) => x.author.bio?.trim());
   // Afiliacoes numeradas, como as revistas fazem: cada afiliacao distinta ganha
   // um numero e o autor recebe o marcador correspondente. Evita repetir o nome
   // da instituicao em artigos com muitos autores do mesmo lugar.
@@ -188,22 +194,49 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           <h1 className="artigo__titulo">{a.title}</h1>
           {a.subtitle && <p className="artigo__sub">{a.subtitle}</p>}
 
-          {/* autores, um por linha, com afiliação e ORCID */}
+          {/* Ficha de autoria: uma linha por informação, cada uma com seu sinal.
+              E-mail e currículo só aparecem quando o registro os tem. */}
           <ul className="fichaut">
             {a.authors.map((x) => (
               <li key={x.authorId}>
-                <Link className="fichaut__nome" href={`/autor/${x.author.slug}`}>
-                  {x.author.name}
-                </Link>
-                {x.affiliation && <span className="fichaut__af">{x.affiliation}</span>}
+                <span className="fichaut__linha fichaut__linha--nome">
+                  <IconeFicha tipo="pessoa" />
+                  <Link className="fichaut__nome" href={`/autor/${x.author.slug}`}>
+                    {x.author.name}
+                  </Link>
+                </span>
+
+                {x.author.email && (
+                  <span className="fichaut__linha">
+                    <IconeFicha tipo="email" />
+                    <a href={`mailto:${x.author.email}`}>{x.author.email}</a>
+                  </span>
+                )}
+
+                {(x.affiliation ?? x.author.affiliation) && (
+                  <span className="fichaut__linha">
+                    <IconeFicha tipo="instituicao" />
+                    <span>{x.affiliation ?? x.author.affiliation}</span>
+                  </span>
+                )}
+
                 {x.author.orcid && (
-                  <a className="fichaut__orcid" href={`https://orcid.org/${x.author.orcid}`} rel="noreferrer">
-                    <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden>
+                  <span className="fichaut__linha">
+                    <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden className="fichaut__ic fichaut__ic--orcid">
                       <circle cx="8" cy="8" r="7.3" fill="currentColor" />
                       <text x="8" y="11.4" textAnchor="middle" fontSize="9" fontFamily="serif" fill="var(--paper)">iD</text>
                     </svg>
-                    {x.author.orcid}
-                  </a>
+                    <a href={`https://orcid.org/${x.author.orcid}`} rel="noreferrer">
+                      https://orcid.org/{x.author.orcid}
+                    </a>
+                  </span>
+                )}
+
+                {x.author.lattes && (
+                  <span className="fichaut__linha">
+                    <IconeFicha tipo="lattes" />
+                    <a href={x.author.lattes} rel="noreferrer">{x.author.lattes}</a>
+                  </span>
                 )}
               </li>
             ))}
@@ -241,7 +274,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
 
           {a.abstract && (
             <section id="resumo" style={{ paddingTop: "1.75rem", scrollMarginTop: "6rem" }}>
-              <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>Resumo</p>
+              <h2 className="secao-art">Resumo</h2>
               <div className="corpo">
                 <p className="primeira">{a.abstract}</p>
               </div>
@@ -254,11 +287,28 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             </div>
           )}
 
+          {comBio.length > 0 && (
+            <section id="biografia" style={{ paddingTop: "2.5rem", scrollMarginTop: "6rem" }}>
+              <h2 className="secao-art">Biografia dos autores</h2>
+              <div className="bio">
+                {comBio.map((x) => (
+                  <div key={x.authorId}>
+                    <p className="bio__nome">
+                      {x.author.name}
+                      {(x.affiliation ?? x.author.affiliation) && (
+                        <span>, {x.affiliation ?? x.author.affiliation}</span>
+                      )}
+                    </p>
+                    <p className="bio__texto">{x.author.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {a.references.length > 0 && (
             <section id="referencias" style={{ paddingTop: "2.5rem", scrollMarginTop: "6rem" }}>
-              <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>
-                Referências ({num(a.references.length)})
-              </p>
+              <h2 className="secao-art">Referências ({num(a.references.length)})</h2>
               <ol className="refs">
                 {a.references.map((ref) => (
                   <li key={ref.id}>
@@ -274,7 +324,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
 
           {vizinhos.length > 0 && (
             <section id="relacionados" style={{ paddingTop: "3rem", scrollMarginTop: "6rem" }}>
-              <p className="eyebrow" style={{ marginBottom: "1.25rem" }}>Artigos com temas em comum</p>
+              <h2 className="secao-art">Artigos com temas em comum</h2>
               <div className="indice">
                 {vizinhos.map((v) => <ItemArtigo key={v.id} artigo={v} mostrarEdicao />)}
               </div>
@@ -374,13 +424,18 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
 
           <div className="caixa">
             <div className="caixa__titulo">Licença</div>
-            <p className="caixa__dado">
-              <a href={a.license ?? "https://creativecommons.org/licenses/by/4.0/"} rel="license noreferrer">
-                Creative Commons CC BY 4.0
-              </a>
+            <p className="licenca__copy">
+              Copyright (c) {cita.ano ?? new Date().getUTCFullYear()}{" "}
+              {listarAutores(autores, 4)}
             </p>
-            <p className="doi-reg__nota">
-              Qualquer pessoa pode copiar, distribuir e adaptar este trabalho,
+            <span className="licenca__selo" aria-hidden>
+              <span>CC</span><span>BY</span>
+            </span>
+            <p className="doi-reg__nota" style={{ marginTop: 0 }}>
+              Este trabalho está licenciado sob a{" "}
+              <a href={a.license ?? "https://creativecommons.org/licenses/by/4.0/"} rel="license noreferrer">
+                Creative Commons Attribution 4.0 International License
+              </a>. Qualquer pessoa pode copiar, distribuir e adaptar o texto,
               inclusive para fins comerciais, desde que cite a autoria.
             </p>
           </div>
@@ -407,6 +462,42 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             </ul>
           </div>
         </div>
+
+        {/* ================= coluna da revista ================= */}
+        <aside className="lateral-site" aria-label="A revista">
+          <Link className="btn btn--solid btn--pdf" href="/submeter">Enviar submissão</Link>
+
+          <div className="bloco">
+            <p className="bloco__titulo">Palavras-chave da revista</p>
+            <NuvemTermos termos={temas} href={(slug) => `/explorar/${slug}`} />
+            <p style={{ margin: "0.8rem 0 0" }}>
+              <Link className="mono" href="/explorar" style={{ color: "var(--ember)", fontSize: "var(--step--2)" }}>
+                Mapa completo →
+              </Link>
+            </p>
+          </div>
+
+          <div className="bloco">
+            <p className="bloco__titulo">
+              {lidos.criterio === "leituras" ? "Artigos mais lidos" : "Artigos mais citados"}
+            </p>
+            <ol className="lidos">
+              {lidos.itens.map((x, i) => (
+                <li key={x.slug}>
+                  <span className="lidos__n">{String(i + 1).padStart(2, "0")}</span>
+                  <span>
+                    <Link className="lidos__t" href={`/artigo/${x.slug}`}>{recorte(x.title, 80)}</Link>
+                    <span className="lidos__m">
+                      {lidos.criterio === "leituras"
+                        ? `${num(x.viewCount + x.legacyViews)} leituras`
+                        : `${num(x.citationCount)} ${x.citationCount === 1 ? "citação" : "citações"}`}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </aside>
       </div>
     </>
   );

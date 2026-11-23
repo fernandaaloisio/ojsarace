@@ -173,6 +173,9 @@ model Author {
   country     String?
   lattes      String?
   email       String?
+  /// Minibiografia publicada na pagina do artigo, como as revistas fazem.
+  /// Preenchida pela editoria; o acervo importado do OJS nao traz este dado.
+  bio         String?
   articleCount Int    @default(0)
 
   articles ArticleAuthor[]

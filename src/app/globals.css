@@ -518,14 +518,27 @@ a.tag:hover { border-color: var(--ember); color: var(--ember); background: color
 /* ---------- 8. artigo ---------- */
 /* Duas colunas: o texto e a coluna de blocos, como nas revistas. A ficha
    tecnica que ficava na margem esquerda virou bloco na lateral. */
+/* Tres colunas, como nas revistas: o texto, os blocos do artigo e os blocos
+   da revista. Abaixo de 1200px a coluna da revista desce para o fim; abaixo
+   de 900px tudo vira uma coluna so. */
 .artigo {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
-  gap: clamp(1.5rem, 4vw, 3.25rem);
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 17rem) minmax(14rem, 16rem);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
   padding-block: clamp(2rem, 5vw, 4rem);
   align-items: start;
 }
-@media (max-width: 1080px) { .artigo { grid-template-columns: minmax(0, 1fr); } }
+.lateral-site { display: grid; gap: 1.5rem; }
+
+@media (max-width: 1200px) {
+  .artigo { grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem); }
+  .lateral-site {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    align-items: start;
+  }
+}
+@media (max-width: 900px) { .artigo { grid-template-columns: minmax(0, 1fr); } }
 
 /* marginália: metadados técnicos no rail esquerdo, como num periódico impresso */
 .marginalia {
@@ -1882,42 +1895,42 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 
 /* ---------- ficha dos autores ---------- */
 
+/* Uma linha por informacao, cada uma com seu sinal alinhado a esquerda:
+   o olho percorre a coluna de icones e encontra o que procura. */
 .fichaut {
   list-style: none;
-  margin: 1.5rem 0 0;
+  margin: 1.6rem 0 0;
   padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: 1.1rem;
 }
-.fichaut li {
+.fichaut li { display: grid; gap: 0.22rem; }
+
+.fichaut__linha {
   display: grid;
-  gap: 0.15rem;
-  padding-left: 0.85rem;
-  border-left: 2px solid var(--marca-veu);
-}
-.fichaut__nome {
-  font-family: var(--serif);
-  font-size: var(--step-0);
-  font-weight: 600;
-  color: var(--ink);
-}
-.fichaut__nome:hover { color: var(--ember); }
-.fichaut__af {
+  grid-template-columns: 1.05rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.45rem;
   font-family: var(--sans);
   font-size: var(--step--2);
   color: var(--ink-3);
   line-height: 1.45;
 }
-.fichaut__orcid {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--moss);
-  width: fit-content;
+.fichaut__linha a { color: var(--ink-3); }
+.fichaut__linha a:hover { color: var(--ember); }
+
+.fichaut__ic { color: var(--marca); margin-top: 0.12em; }
+.fichaut__ic--orcid { color: var(--moss); }
+
+.fichaut__linha--nome { margin-bottom: 0.1rem; }
+.fichaut__nome {
+  font-family: var(--sans);
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
 }
-.fichaut__orcid:hover { color: var(--ember); }
+.fichaut__nome:hover { color: var(--ember); }
 
 /* ---------- palavras-chave antes do resumo ---------- */
 
@@ -2031,3 +2044,96 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 @media (max-width: 1080px) {
   .capa { aspect-ratio: auto; padding-block: 1.5rem; }
 }
+
+/* =========================================================================
+   TÍTULO DE SEÇÃO DO ARTIGO
+   Palavra em caixa alta com um traço curto embaixo, que é como as revistas
+   marcam Resumo, Downloads e Biografia.
+   ========================================================================= */
+
+.secao-art {
+  font-family: var(--sans);
+  font-size: var(--step--1);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin: 0 0 1.2rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 3px solid var(--marca);
+  width: fit-content;
+}
+
+/* Resumo e biografia justificados, como no texto impresso. A separação
+   silábica evita os rios de espaço que a justificação costuma abrir. */
+.corpo p,
+.bio__texto {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* ---------- biografia dos autores ---------- */
+
+.bio { display: grid; gap: 1.5rem; }
+.bio__nome {
+  font-family: var(--sans);
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 0.4rem;
+  line-height: 1.4;
+}
+.bio__nome span { font-weight: 400; color: var(--ink-3); }
+.bio__texto {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---------- bloco de licença ---------- */
+
+.licenca__copy {
+  font-family: var(--sans);
+  font-size: var(--step--2);
+  color: var(--ink-3);
+  line-height: 1.5;
+  margin: 0 0 0.9rem;
+}
+.licenca__selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--rule);
+  margin-bottom: 0.8rem;
+}
+.licenca__selo span {
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.22rem 0.42rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+.licenca__selo span + span { background: var(--paper); color: var(--ink); }
+
+/* ---------- nuvem de termos em texto ---------- */
+
+.nuvem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.18rem 0.6rem;
+  margin: 0;
+  line-height: 1.3;
+}
+.nuvem a {
+  font-family: var(--serif);
+  color: var(--ink-2);
+  transition: color 0.15s;
+}
+.nuvem a:nth-child(3n) { color: var(--marca-3); }
+.nuvem a:nth-child(5n) { color: var(--ember); }
+.nuvem a:hover { color: var(--ember-deep); opacity: 1 !important; }
