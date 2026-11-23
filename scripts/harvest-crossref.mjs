@@ -11,7 +11,9 @@ const ROWS = 500;
 
 const SELECT = [
   "DOI", "title", "subtitle", "abstract", "author", "issued", "published",
-  "volume", "issue", "page", "article-number", "URL", "type", "language",
+  // "language" nao e um campo aceito em ?select= e faz a API devolver HTTP 400,
+  // embora venha no corpo da resposta. Por isso fica de fora da lista.
+  "volume", "issue", "page", "article-number", "URL", "type",
   "container-title", "is-referenced-by-count", "references-count",
   "reference", "subject", "license", "link", "created",
 ].join(",");
