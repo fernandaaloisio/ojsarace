@@ -362,6 +362,30 @@ export const metricasArtigo = cache(async (id: string) => {
   }
   const serie = [...porDia.entries()].map(([dia, v]) => ({ dia, ...v }));
 
+  // Serie dos ultimos 12 meses, que e o grafico que as revistas publicam na
+  // propria pagina do artigo. Aqui vale varrer tudo: um artigo tem poucos
+  // registros, e o indice por articleId resolve.
+  const todos = await db.accessLog.groupBy({
+    by: ["day", "kind"],
+    where: { articleId: id },
+    _count: { _all: true },
+  });
+  const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  const porMes = new Map<string, { rotulo: string; leituras: number; baixados: number }>();
+  const agora = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth() - i, 1));
+    const chave = d.toISOString().slice(0, 7);
+    porMes.set(chave, { rotulo: MESES[d.getUTCMonth()], leituras: 0, baixados: 0 });
+  }
+  for (const r of todos) {
+    const alvo = porMes.get(r.day.slice(0, 7));
+    if (!alvo) continue;
+    if (r.kind === "download") alvo.baixados += r._count._all;
+    else alvo.leituras += r._count._all;
+  }
+  const serieMes = [...porMes.entries()].map(([mes, v]) => ({ mes, ...v }));
+
   // Onde este artigo esta na distribuicao de citacoes da revista. Diz mais
   // que o numero cru: 12 citacoes pode ser muito ou pouco conforme o acervo.
   const [totalComDoi, abaixo] = await Promise.all([
@@ -372,6 +396,7 @@ export const metricasArtigo = cache(async (id: string) => {
 
   return {
     serie,
+    serieMes,
     percentil,
     totalComDoi,
     visualizacoes: a.viewCount + a.legacyViews,

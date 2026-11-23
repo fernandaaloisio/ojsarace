@@ -47,7 +47,8 @@
   /* O fallback dentro do var() importa: sem ele, se a variavel da fonte nao
      estiver definida neste elemento, o token inteiro vira invalido e o
      navegador cai no serif padrao em vez de usar a lista de reserva. */
-  --display: var(--font-sans, "Libre Franklin"), "Libre Franklin", system-ui, sans-serif;
+  --display: var(--font-serif, "EB Garamond"), "EB Garamond", Garamond, "Times New Roman", serif;
+  --serif:   var(--font-serif, "EB Garamond"), "EB Garamond", Garamond, "Times New Roman", serif;
   --sans:    var(--font-sans, "Libre Franklin"), "Libre Franklin", system-ui, -apple-system, sans-serif;
   --mono:    var(--font-mono, "DM Mono"), "DM Mono", ui-monospace, "SF Mono", monospace;
 
@@ -60,7 +61,9 @@
   /* ritmo tipográfico */
   --step--2: clamp(0.688rem, 0.67rem + 0.09vw, 0.75rem);
   --step--1: clamp(0.8rem, 0.78rem + 0.11vw, 0.875rem);
-  --step-0:  clamp(0.975rem, 0.95rem + 0.14vw, 1.05rem);
+  /* A Garamond tem olho pequeno. Para ler igual a uma sans ela precisa de um
+     a dois pontos a mais, por isso a escala do texto sobe aqui. */
+  --step-0:  clamp(1.06rem, 1rem + 0.2vw, 1.16rem);
   --step-1:  clamp(1.125rem, 1.08rem + 0.23vw, 1.25rem);
   --step-2:  clamp(1.35rem, 1.27rem + 0.38vw, 1.6rem);
   --step-3:  clamp(1.65rem, 1.5rem + 0.7vw, 2.1rem);
@@ -109,9 +112,9 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--sans);
+  font-family: var(--serif);
   font-size: var(--step-0);
-  line-height: 1.6;
+  line-height: 1.65;
   font-feature-settings: "ss01", "cv05";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -120,16 +123,16 @@ body {
 /* Sem véu de grão: o fundo agora é branco e a textura só turvaria o texto.
    A identidade vem da tipografia, da cor institucional e dos blocos. */
 
+/* Em Garamond o peso alto engrossa demais: a serifa ja da presenca ao
+   titulo, entao 600 basta e o aperto de letra sai quase todo. */
 h1, h2, h3, h4 {
   font-family: var(--display);
-  font-weight: 700;
-  /* um aperto leve na largura: deixa o titulo denso sem virar condensada */
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.004em;
   margin: 0;
   text-wrap: balance;
 }
-h1 { font-weight: 800; letter-spacing: -0.028em; }
 
 p { margin: 0 0 1em; }
 a { color: inherit; text-decoration: none; }
@@ -159,7 +162,7 @@ img, svg { max-width: 100%; display: block; }
 /* Rotulo de secao. Nesta identidade ele e um bloco de cor, nao uma linha
    de texto solta: e o elemento que da ritmo a pagina e separa as secoes. */
 .eyebrow {
-  font-family: var(--display);
+  font-family: var(--sans);
   font-size: var(--step--2);
   font-weight: 700;
   text-transform: uppercase;
@@ -513,10 +516,12 @@ a.tag:hover { border-color: var(--ember); color: var(--ember); background: color
 .tag--idioma { border-color: var(--rule-soft); color: var(--ink-4); text-transform: uppercase; }
 
 /* ---------- 8. artigo ---------- */
+/* Duas colunas: o texto e a coluna de blocos, como nas revistas. A ficha
+   tecnica que ficava na margem esquerda virou bloco na lateral. */
 .artigo {
   display: grid;
-  grid-template-columns: var(--rail) minmax(0, 1fr) minmax(15rem, 19rem);
-  gap: clamp(1.5rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
+  gap: clamp(1.5rem, 4vw, 3.25rem);
   padding-block: clamp(2rem, 5vw, 4rem);
   align-items: start;
 }
@@ -1243,7 +1248,7 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   display: none;
   align-items: center;
   gap: 0.45rem;
-  font-family: var(--display);
+  font-family: var(--sans);
   font-weight: 800;
   font-size: var(--step-0);
   letter-spacing: 0.04em;
@@ -1441,7 +1446,7 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 .metricas__item:last-child { border-right: 0; }
 .metricas__icone { color: var(--marca); display: block; margin-bottom: 0.5rem; }
 .metricas__n {
-  font-family: var(--display);
+  font-family: var(--sans);
   font-size: var(--step-2);
   font-weight: 700;
   line-height: 1;
@@ -1766,4 +1771,263 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   color: var(--ink-4);
   line-height: 1.55;
   margin: 0.9rem 0 0;
+}
+
+/* =========================================================================
+   ACESSOS POR MÊS, NO CORPO DO ARTIGO
+   O gráfico que as revistas publicam na própria página do trabalho.
+   ========================================================================= */
+
+.mensal__caixa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 1rem 1.1rem 0.8rem;
+}
+
+.mensal__eixo {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 9rem;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-4);
+  text-align: right;
+  padding-bottom: 1.6rem;
+}
+
+.mensal__barras {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0.3rem;
+  align-items: end;
+  border-left: 1px solid var(--rule);
+  padding-left: 0.5rem;
+}
+.mensal__barras li {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  gap: 0.25rem;
+  height: 9rem;
+}
+.mensal__col {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 2.1rem;
+  height: 100%;
+  border-bottom: 1px solid var(--rule);
+}
+.mensal__leituras { display: block; background: var(--marca); min-height: 0; }
+.mensal__baixados { display: block; background: var(--ember); min-height: 0; }
+.mensal__rot,
+.mensal__val {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-4);
+  line-height: 1.2;
+}
+.mensal__val { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.mensal__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--ink-4);
+  margin: 0.7rem 0 0;
+}
+.mensal__legenda span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.mensal__legenda i { width: 8px; height: 8px; flex: none; }
+
+/* =========================================================================
+   PÁGINA DO ARTIGO: MODELO DE REVISTA
+   Migalha, ficha de autores, palavras-chave antes do resumo, capa da edição
+   e blocos na lateral. A organização das revistas científicas; a cor e a
+   tipografia continuam sendo as da ARACÊ.
+   ========================================================================= */
+
+.migalha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-family: var(--sans);
+  font-size: var(--step--2);
+  color: var(--ink-4);
+  margin: 0 0 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.migalha a { color: var(--ink-3); }
+.migalha a:hover { color: var(--ember); }
+
+.artigo__sub {
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  font-style: italic;
+  color: var(--ink-3);
+  margin: 0.7rem 0 0;
+  line-height: 1.35;
+}
+
+/* ---------- ficha dos autores ---------- */
+
+.fichaut {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.fichaut li {
+  display: grid;
+  gap: 0.15rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--marca-veu);
+}
+.fichaut__nome {
+  font-family: var(--serif);
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--ink);
+}
+.fichaut__nome:hover { color: var(--ember); }
+.fichaut__af {
+  font-family: var(--sans);
+  font-size: var(--step--2);
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+.fichaut__orcid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--moss);
+  width: fit-content;
+}
+.fichaut__orcid:hover { color: var(--ember); }
+
+/* ---------- palavras-chave antes do resumo ---------- */
+
+.artigo__chaves {
+  font-family: var(--serif);
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  line-height: 1.6;
+  margin: 1.4rem 0 0;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--rule);
+}
+.artigo__chaves b { font-family: var(--sans); font-size: var(--step--2);
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
+.artigo__chaves a { color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+.artigo__chaves a:hover { color: var(--ember); border-bottom-color: currentColor; }
+
+/* ---------- referências ---------- */
+
+.refs {
+  padding-left: 1.6rem;
+  display: grid;
+  gap: 0.75rem;
+  color: var(--ink-2);
+  line-height: 1.55;
+  font-size: var(--step--1);
+  margin: 0;
+}
+.refs li::marker { font-family: var(--mono); color: var(--ink-4); font-size: 0.8em; }
+.refs a { color: var(--ember); font-family: var(--mono); font-size: 0.9em; }
+
+/* ---------- capa da edição, montada a partir dos dados ---------- */
+
+.capa {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  text-align: center;
+  padding: 2rem 1.25rem 1.75rem;
+  background: linear-gradient(170deg, var(--marca-2), var(--marca));
+  color: #ffffff;
+  border: 1px solid var(--marca-2);
+  aspect-ratio: 3 / 4;
+  align-content: center;
+}
+.capa:hover { background: linear-gradient(170deg, var(--marca), var(--marca-3)); color: #ffffff; }
+.capa__marca {
+  position: relative;
+  width: 2.6rem;
+  height: 2.05rem;
+  margin-bottom: 0.6rem;
+}
+.capa__marca::before {
+  content: "";
+  position: absolute;
+  left: 8%; right: 8%; top: 0;
+  height: 72%;
+  background: #f2f7f4;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.capa__marca::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 4%;
+  height: 18%;
+  background: var(--dawn);
+}
+.capa__nome {
+  font-family: var(--sans);
+  font-size: var(--step-1);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.capa__linha { width: 2.5rem; height: 2px; background: var(--dawn); margin: 0.35rem 0; }
+.capa__ed { font-family: var(--serif); font-size: var(--step-0); }
+.capa__ano { font-family: var(--mono); font-size: var(--step--2); opacity: 0.72; }
+
+/* ---------- botão de PDF em destaque, como nas revistas ---------- */
+
+.btn--pdf {
+  width: 100%;
+  justify-content: center;
+  font-size: var(--step-0);
+  padding-block: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- dado solto dentro de um bloco ---------- */
+
+.caixa__dado {
+  font-family: var(--serif);
+  font-size: var(--step-0);
+  color: var(--ink);
+  margin: 0;
+}
+.caixa__dado a { color: var(--ember); }
+
+.lista-limpa {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--sans);
+  font-size: var(--step--2);
+}
+.lista-limpa a { color: var(--ember); }
+.lista-limpa a:hover { color: var(--ember-deep); }
+
+@media (max-width: 1080px) {
+  .capa { aspect-ratio: auto; padding-block: 1.5rem; }
 }

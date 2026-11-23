@@ -5,6 +5,7 @@ import { artigoPorSlug, relacionados, metricasArtigo } from "@/lib/queries";
 import ItemArtigo from "@/components/ItemArtigo";
 import Citar from "@/components/Citar";
 import MetricasArtigo from "@/components/MetricasArtigo";
+import { SerieMensal } from "@/components/graficos";
 import RegistrarLeitura from "@/components/RegistrarLeitura";
 import { abnt, apa, vancouver, bibtex, ris, type CitaDados } from "@/lib/cite";
 import { dataLonga, num, recorte, IDIOMAS, SITE_URL } from "@/lib/text";
@@ -168,107 +169,47 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
       <RegistrarLeitura id={a.id} />
 
       <div className="shell artigo">
-        {/* ---------- marginália: ficha técnica ---------- */}
-        <aside className="marginalia" aria-label="Ficha técnica do artigo">
-          {a.elocationId && (
-            <div className="marginalia__bloco">
-              <dt>Identificador</dt>
-              <dd className="marginalia__num">{a.elocationId}</dd>
-            </div>
-          )}
-          {a.doi && (
-            <div className="marginalia__bloco">
-              <dt>DOI</dt>
-              <dd><a href={`https://doi.org/${a.doi}`} rel="noreferrer">{a.doi}</a></dd>
-            </div>
-          )}
-          {a.issue && (
-            <div className="marginalia__bloco">
-              <dt>Edição</dt>
-              <dd><Link href={`/edicao/${a.issue.slug}`}>{a.issue.label}</Link></dd>
-            </div>
-          )}
-          {a.publishedAt && (
-            <div className="marginalia__bloco">
-              <dt>Publicado</dt>
-              <dd>{dataLonga(a.publishedAt)}</dd>
-            </div>
-          )}
-          {paginas && (
-            <div className="marginalia__bloco"><dt>Páginas</dt><dd>{paginas}</dd></div>
-          )}
-          <div className="marginalia__bloco">
-            <dt>Seção</dt>
-            <dd>{a.section?.name ?? "Artigos"}</dd>
-          </div>
-          <div className="marginalia__bloco">
-            <dt>Idioma</dt>
-            <dd>{IDIOMAS[a.language] ?? a.language}</dd>
-          </div>
-          <div className="marginalia__bloco">
-            <dt>Citações no Crossref</dt>
-            <dd className="marginalia__num">{num(a.citationCount)}</dd>
-          </div>
-          <div className="marginalia__bloco">
-            <dt>Licença</dt>
-            <dd><a href={a.license ?? "https://creativecommons.org/licenses/by/4.0/"} rel="license noreferrer">CC BY 4.0</a></dd>
-          </div>
-        </aside>
-
-        {/* ---------- corpo ---------- */}
+        {/* ================= corpo ================= */}
         <article>
-          <p className="eyebrow" style={{ marginBottom: "1.25rem" }}>
-            {a.journal.title}
-            <span aria-hidden>·</span>
-            {a.section?.name ?? "Artigos"}
-          </p>
+          <nav className="migalha" aria-label="Você está em">
+            <Link href="/">{a.journal.title}</Link>
+            <span aria-hidden>/</span>
+            <Link href="/arquivo">Acervo</Link>
+            {a.issue && (
+              <>
+                <span aria-hidden>/</span>
+                <Link href={`/edicao/${a.issue.slug}`}>{a.issue.label}</Link>
+              </>
+            )}
+            <span aria-hidden>/</span>
+            <span>{a.section?.name ?? "Artigos"}</span>
+          </nav>
 
           <h1 className="artigo__titulo">{a.title}</h1>
-          {a.subtitle && (
-            <p style={{ fontFamily: "var(--display)", fontSize: "var(--step-2)", color: "var(--ink-3)", marginTop: "0.9rem", lineHeight: 1.2 }}>
-              {a.subtitle}
-            </p>
-          )}
+          {a.subtitle && <p className="artigo__sub">{a.subtitle}</p>}
 
-          <div className="artigo__autores">
+          {/* autores, um por linha, com afiliação e ORCID */}
+          <ul className="fichaut">
             {a.authors.map((x) => (
-              <span key={x.authorId}>
-                <Link href={`/autor/${x.author.slug}`}>{x.author.name}</Link>
-                {x.affiliation && marcador.has(x.affiliation.trim()) && (
-                  <sup className="autor__af" aria-label={`Afiliação ${marcador.get(x.affiliation.trim())}`}>
-                    {marcador.get(x.affiliation.trim())}
-                  </sup>
-                )}
+              <li key={x.authorId}>
+                <Link className="fichaut__nome" href={`/autor/${x.author.slug}`}>
+                  {x.author.name}
+                </Link>
+                {x.affiliation && <span className="fichaut__af">{x.affiliation}</span>}
                 {x.author.orcid && (
-                  <a href={`https://orcid.org/${x.author.orcid}`} rel="noreferrer"
-                     title={`ORCID ${x.author.orcid}`} aria-label={`ORCID de ${x.author.name}`}
-                     style={{ marginLeft: "0.3rem", color: "var(--moss)", borderBottom: 0 }}>
-                    <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden style={{ display: "inline" }}>
+                  <a className="fichaut__orcid" href={`https://orcid.org/${x.author.orcid}`} rel="noreferrer">
+                    <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden>
                       <circle cx="8" cy="8" r="7.3" fill="currentColor" />
                       <text x="8" y="11.4" textAnchor="middle" fontSize="9" fontFamily="serif" fill="var(--paper)">iD</text>
                     </svg>
+                    {x.author.orcid}
                   </a>
                 )}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          {afiliacoes.length > 0 && (
-            <ol className="afiliacoes" aria-label="Afiliações dos autores">
-              {afiliacoes.map((af, i) => (
-                <li key={af} value={i + 1}>{af}</li>
-              ))}
-            </ol>
-          )}
-
-          {/* linha de identificação da publicação, como nas revistas */}
           <p className="artigo__meta">
-            {a.issue && (
-              <>
-                <Link href={`/edicao/${a.issue.slug}`}>{a.issue.label}</Link>
-                <span aria-hidden>·</span>
-              </>
-            )}
             {paginas && <>p. {paginas}<span aria-hidden>·</span></>}
             {a.elocationId && !paginas && <>{a.elocationId}<span aria-hidden>·</span></>}
             {a.publishedAt && <>Publicado em {dataLonga(a.publishedAt)}</>}
@@ -280,31 +221,26 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             )}
           </p>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.55rem", margin: "1.75rem 0 2rem" }}>
-            {a.pdfUrl && (
-              <a className="btn btn--solid" href={`/api/baixar/${a.slug}`} rel="noreferrer">
-                Baixar PDF
-              </a>
-            )}
-            <a className="btn btn--quiet" href="#como-citar">Como citar</a>
-            {a.doi && (
-              <a className="btn btn--quiet" href={`https://doi.org/${a.doi}`} rel="noreferrer">
-                Resolver DOI
-              </a>
-            )}
-          </div>
+          {a.keywords.length > 0 && (
+            <p className="artigo__chaves" id="palavras-chave" style={{ scrollMarginTop: "6rem" }}>
+              <b>Palavras-chave:</b>{" "}
+              {a.keywords.map((k, i) => (
+                <span key={k.keywordId}>
+                  {i > 0 && "; "}
+                  <Link href={`/explorar/${k.keyword.slug}`}>{k.keyword.term}</Link>
+                </span>
+              ))}
+            </p>
+          )}
 
-          {/* navegação entre as seções disponíveis neste artigo */}
           {secoes.length > 1 && (
             <nav className="artigo__nav" aria-label="Seções deste artigo">
-              {secoes.map((sec) => (
-                <a key={sec.id} href={`#${sec.id}`}>{sec.rotulo}</a>
-              ))}
+              {secoes.map((sec) => <a key={sec.id} href={`#${sec.id}`}>{sec.rotulo}</a>)}
             </nav>
           )}
 
           {a.abstract && (
-            <section id="resumo" style={{ paddingTop: "2rem", scrollMarginTop: "6rem" }}>
+            <section id="resumo" style={{ paddingTop: "1.75rem", scrollMarginTop: "6rem" }}>
               <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>Resumo</p>
               <div className="corpo">
                 <p className="primeira">{a.abstract}</p>
@@ -312,17 +248,10 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             </section>
           )}
 
-          {a.keywords.length > 0 && (
-            <section id="palavras-chave" style={{ paddingTop: "1.75rem", scrollMarginTop: "6rem" }}>
-              <p className="eyebrow" style={{ marginBottom: "1rem" }}>Palavras-chave</p>
-              <div className="filtros" style={{ padding: 0 }}>
-                {a.keywords.map((k) => (
-                  <Link key={k.keywordId} className="tag" href={`/explorar/${k.keyword.slug}`}>
-                    {k.keyword.term}
-                  </Link>
-                ))}
-              </div>
-            </section>
+          {metricas && (
+            <div style={{ paddingTop: "2.5rem" }}>
+              <SerieMensal serie={metricas.serieMes} />
+            </div>
           )}
 
           {a.references.length > 0 && (
@@ -330,14 +259,12 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
               <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>
                 Referências ({num(a.references.length)})
               </p>
-              <ol className="mono" style={{ paddingLeft: "1.6rem", display: "grid", gap: "0.7rem", color: "var(--ink-3)", lineHeight: 1.55 }}>
+              <ol className="refs">
                 {a.references.map((ref) => (
                   <li key={ref.id}>
                     {ref.unstructured ?? [ref.journalTitle, ref.year].filter(Boolean).join(", ")}
                     {ref.doi && (
-                      <> <a href={`https://doi.org/${ref.doi}`} rel="noreferrer" style={{ color: "var(--ember)" }}>
-                        doi:{ref.doi}
-                      </a></>
+                      <> <a href={`https://doi.org/${ref.doi}`} rel="noreferrer">doi:{ref.doi}</a></>
                     )}
                   </li>
                 ))}
@@ -355,8 +282,32 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           )}
         </article>
 
-        {/* ---------- coluna de ações ---------- */}
+        {/* ================= lateral ================= */}
         <div className="aside-artigo">
+          {/* capa gerada a partir dos dados da edição */}
+          {a.issue && (
+            <Link className="capa" href={`/edicao/${a.issue.slug}`} aria-label={`Edição ${a.issue.label}`}>
+              <span className="capa__marca" aria-hidden />
+              <span className="capa__nome">{a.journal.title}</span>
+              <span className="capa__linha" aria-hidden />
+              <span className="capa__ed">{a.issue.label}</span>
+              {a.issue.year && <span className="capa__ano">{a.issue.year}</span>}
+            </Link>
+          )}
+
+          {a.pdfUrl && (
+            <a className="btn btn--solid btn--pdf" href={`/api/baixar/${a.slug}`} rel="noreferrer">
+              Baixar PDF
+            </a>
+          )}
+
+          {a.publishedAt && (
+            <div className="caixa">
+              <div className="caixa__titulo">Publicado</div>
+              <p className="caixa__dado">{dataLonga(a.publishedAt)}</p>
+            </div>
+          )}
+
           {metricas && <MetricasArtigo m={metricas} />}
 
           <div id="como-citar" style={{ scrollMarginTop: "6rem" }}>
@@ -407,34 +358,54 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             )}
           </div>
 
+          {a.issue && (
+            <div className="caixa">
+              <div className="caixa__titulo">Edição</div>
+              <p className="caixa__dado">
+                <Link href={`/edicao/${a.issue.slug}`}>{a.issue.label}</Link>
+              </p>
+            </div>
+          )}
+
+          <div className="caixa">
+            <div className="caixa__titulo">Seção</div>
+            <p className="caixa__dado">{a.section?.name ?? "Artigos"}</p>
+          </div>
+
+          <div className="caixa">
+            <div className="caixa__titulo">Licença</div>
+            <p className="caixa__dado">
+              <a href={a.license ?? "https://creativecommons.org/licenses/by/4.0/"} rel="license noreferrer">
+                Creative Commons CC BY 4.0
+              </a>
+            </p>
+            <p className="doi-reg__nota">
+              Qualquer pessoa pode copiar, distribuir e adaptar este trabalho,
+              inclusive para fins comerciais, desde que cite a autoria.
+            </p>
+          </div>
+
           <div className="caixa">
             <div className="caixa__titulo">Metadados abertos</div>
-            <ul className="mono" style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.55rem", fontSize: "var(--step--2)" }}>
+            <ul className="lista-limpa">
               {a.oaiIdentifier && (
                 <li>
-                  <a href={`/api/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=${encodeURIComponent(`oai:arace:${a.slug}`)}`}
-                     style={{ color: "var(--ember)" }}>
+                  <a href={`/api/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=${encodeURIComponent(`oai:arace:${a.slug}`)}`}>
                     Registro OAI-PMH
                   </a>
                 </li>
               )}
               {a.doi && (
                 <li>
-                  <a href={`https://api.crossref.org/works/${a.doi}`} rel="noreferrer" style={{ color: "var(--ember)" }}>
-                    JSON do Crossref
-                  </a>
+                  <a href={`https://api.crossref.org/works/${a.doi}`} rel="noreferrer">JSON do Crossref</a>
                 </li>
               )}
+              <li><a href={`/api/oai?verb=Identify`}>Servidor OAI desta revista</a></li>
               {a.legacyUrl && (
-                <li>
-                  <a href={a.legacyUrl} rel="noreferrer" style={{ color: "var(--ink-3)" }}>
-                    Registro no portal anterior
-                  </a>
-                </li>
+                <li><a href={a.legacyUrl} rel="noreferrer">Registro no portal anterior</a></li>
               )}
             </ul>
           </div>
-
         </div>
       </div>
     </>

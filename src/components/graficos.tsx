@@ -189,3 +189,56 @@ export function Icone({ tipo }: { tipo: "leitura" | "download" | "citacao" }) {
     </svg>
   );
 }
+
+/* ------------------------------------------------------------- por mês ---- */
+
+export type Mes = { mes: string; rotulo: string; leituras: number; baixados: number };
+
+/**
+ * Acessos por mês nos últimos doze, no corpo do artigo. É o gráfico que as
+ * revistas publicam na própria página: mostra se o trabalho continua sendo
+ * procurado ou se teve só o pico da publicação.
+ */
+export function SerieMensal({ serie }: { serie: Mes[] }) {
+  const total = serie.reduce((s, m) => s + m.leituras + m.baixados, 0);
+  if (total === 0) return null;
+
+  const pico = Math.max(1, ...serie.map((m) => m.leituras + m.baixados));
+  const marcas = [0, Math.round(pico / 2), pico];
+
+  return (
+    <section id="acessos" className="mensal" style={{ scrollMarginTop: "6rem" }}>
+      <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>Acessos por mês</p>
+
+      <div className="mensal__caixa">
+        <div className="mensal__eixo" aria-hidden>
+          {marcas.slice().reverse().map((v) => <span key={v}>{num(v)}</span>)}
+        </div>
+
+        <ol className="mensal__barras">
+          {serie.map((m) => {
+            const soma = m.leituras + m.baixados;
+            return (
+              <li key={m.mes}>
+                <span className="mensal__col"
+                      title={`${m.rotulo}: ${m.leituras} leituras, ${m.baixados} downloads`}>
+                  <span className="mensal__baixados"
+                        style={{ height: `${(m.baixados / pico) * 100}%` }} />
+                  <span className="mensal__leituras"
+                        style={{ height: `${(m.leituras / pico) * 100}%` }} />
+                </span>
+                <span className="mensal__rot">{m.rotulo}</span>
+                <span className="mensal__val">{soma > 0 ? num(soma) : ""}</span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <p className="mensal__legenda">
+        <span><i style={{ background: "var(--marca)" }} aria-hidden /> leituras da página</span>
+        <span><i style={{ background: "var(--ember)" }} aria-hidden /> downloads do PDF</span>
+      </p>
+    </section>
+  );
+}
