@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { edicaoPorSlug, revista } from "@/lib/queries";
 import ItemArtigo from "@/components/ItemArtigo";
+import CapaEdicao from "@/components/CapaEdicao";
 import { db } from "@/lib/db";
 import { dataLonga, num } from "@/lib/text";
 
@@ -47,30 +48,30 @@ export default async function Edicao({ params }: { params: Promise<{ slug: strin
   }
 
   return (
-    <>
-      <header className="shell cabeca-pagina">
-        <p className="eyebrow">
-          <Link href="/arquivo" style={{ color: "var(--ink-3)" }}>Arquivo</Link>
-          <span aria-hidden>·</span>
-          {r.title}
-        </p>
-        <h1>{e.issue.label}</h1>
-        <p className="mono" style={{ color: "var(--ink-3)", marginTop: "1rem" }}>
+    <div className="shell edicao">
+      {/* ================= sumário ================= */}
+      <div>
+        <nav className="migalha" aria-label="Você está em">
+          <Link href="/">{r.title}</Link>
+          <span aria-hidden>/</span>
+          <Link href="/arquivo">Acervo</Link>
+          <span aria-hidden>/</span>
+          <span>{e.issue.label}</span>
+        </nav>
+
+        <h1 style={{ fontSize: "var(--step-3)" }}>{e.issue.label}</h1>
+        <p className="mono" style={{ color: "var(--ink-3)", margin: "0.9rem 0 2rem" }}>
           {num(e.artigos.length)} artigos
           {e.issue.publishedAt && <> · fechada em {dataLonga(e.issue.publishedAt)}</>}
         </p>
-      </header>
 
-      <div className="shell"><hr className="horizonte" style={{ ["--sol" as string]: "12%" }} /></div>
-
-      <section className="shell" style={{ paddingBlock: "clamp(2rem, 4vw, 3rem)" }}>
         {[...porSecao.entries()].map(([secao, artigos]) => (
-          <div key={secao} style={{ marginBottom: "2.5rem" }}>
-            <p className="eyebrow" style={{ marginBottom: "1.25rem" }}>{secao}</p>
+          <section key={secao} style={{ marginBottom: "2.75rem" }}>
+            <h2 className="secao-art">{secao}</h2>
             <div className="indice">
               {artigos.map((a, i) => <ItemArtigo key={a.id} artigo={a} ordem={i + 1} />)}
             </div>
-          </div>
+          </section>
         ))}
 
         <nav className="paginacao" aria-label="Navegação entre edições">
@@ -82,7 +83,55 @@ export default async function Edicao({ params }: { params: Promise<{ slug: strin
             ? <Link className="btn btn--quiet btn--sm" href={`/edicao/${proxima.slug}`} rel="next">{proxima.label} →</Link>
             : <span />}
         </nav>
-      </section>
-    </>
+      </div>
+
+      {/* ================= lateral ================= */}
+      <aside className="aside-artigo" aria-label="Sobre esta edição">
+        <CapaEdicao revista={r.title} label={e.issue.label} ano={e.issue.year}
+                    slug={e.issue.slug} imagem={e.issue.coverUrl} />
+
+        <Link className="btn btn--solid btn--pdf" href="/submeter">Enviar submissão</Link>
+
+        {e.issue.publishedAt && (
+          <div className="caixa">
+            <div className="caixa__titulo">Publicado</div>
+            <p className="caixa__dado">{dataLonga(e.issue.publishedAt)}</p>
+          </div>
+        )}
+
+        <div className="caixa">
+          <div className="caixa__titulo">Nesta edição</div>
+          <dl className="ficha">
+            <div><dt>Artigos</dt><dd>{num(e.artigos.length)}</dd></div>
+            <div><dt>Seções</dt><dd>{num(porSecao.size)}</dd></div>
+            {e.issue.volume != null && <div><dt>Volume</dt><dd>{e.issue.volume}</dd></div>}
+            {e.issue.number && <div><dt>Número</dt><dd>{e.issue.number}</dd></div>}
+            {e.issue.year && <div><dt>Ano</dt><dd>{e.issue.year}</dd></div>}
+          </dl>
+        </div>
+
+        {porSecao.size > 1 && (
+          <div className="caixa">
+            <div className="caixa__titulo">Seções</div>
+            <ul className="lista-limpa">
+              {[...porSecao.entries()].map(([secao, artigos]) => (
+                <li key={secao}>
+                  {secao} <span style={{ color: "var(--ink-4)" }}>({num(artigos.length)})</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="caixa">
+          <div className="caixa__titulo">Edições vizinhas</div>
+          <ul className="lista-limpa">
+            {anterior && <li><Link href={`/edicao/${anterior.slug}`}>← {anterior.label}</Link></li>}
+            {proxima && <li><Link href={`/edicao/${proxima.slug}`}>{proxima.label} →</Link></li>}
+            <li><Link href="/arquivo">Todas as edições</Link></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
   );
 }

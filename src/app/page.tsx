@@ -8,6 +8,7 @@ import {
   edicaoAtual, panorama, revista, palavrasTop, serieAnual, indexadores, maisLidos, recentes,
 } from "@/lib/queries";
 import ItemArtigo from "@/components/ItemArtigo";
+import CapaEdicao from "@/components/CapaEdicao";
 import CampoBusca from "@/components/CampoBusca";
 import Constelacao from "@/components/Constelacao";
 import SerieAnual from "@/components/SerieAnual";
@@ -35,7 +36,7 @@ export default async function Home() {
       <main>
         {/* ---------- sobre a revista ---------- */}
         <section style={{ marginBottom: "clamp(2.5rem, 5vw, 3.5rem)" }}>
-          <p className="eyebrow" style={{ marginBottom: "1.1rem" }}>Sobre a revista</p>
+          <h2 className="secao-art">Sobre a revista</h2>
 
           <div className="sobre-home">
             {r.sobreImagem && (
@@ -62,7 +63,7 @@ export default async function Home() {
             <header style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "baseline",
                              justifyContent: "space-between", marginBottom: "1.5rem" }}>
               <div>
-                <p className="eyebrow" style={{ marginBottom: "0.7rem" }}>Edição atual</p>
+                <h2 className="secao-art">Edição atual</h2>
                 <h2 style={{ fontSize: "var(--step-3)" }}>{atual.issue.label}</h2>
                 {atual.issue.publishedAt && (
                   <p className="mono" style={{ color: "var(--ink-3)", marginTop: "0.5rem" }}>
@@ -95,7 +96,7 @@ export default async function Home() {
             <header style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "baseline",
                              justifyContent: "space-between", marginBottom: "1.5rem" }}>
               <div>
-                <p className="eyebrow" style={{ marginBottom: "0.7rem" }}>Artigos recentes</p>
+                <h2 className="secao-art">Artigos recentes</h2>
                 <p style={{ color: "var(--ink-3)", margin: 0, maxWidth: "46ch" }}>
                   Publicação em fluxo contínuo: os artigos entram no portal à medida
                   que são aprovados, antes do fechamento da edição.
@@ -116,7 +117,7 @@ export default async function Home() {
         <section style={{ paddingTop: "clamp(2.5rem, 5vw, 3.5rem)" }}>
           <header style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "baseline",
                            justifyContent: "space-between", marginBottom: "1.25rem" }}>
-            <p className="eyebrow" style={{ margin: 0 }}>O que a revista publica</p>
+            <h2 className="secao-art" style={{ marginBottom: 0 }}>O que a revista publica</h2>
             <Link className="mono" href="/explorar" style={{ color: "var(--ember)", fontSize: "var(--step--2)" }}>
               mapa completo →
             </Link>
@@ -126,13 +127,19 @@ export default async function Home() {
 
         {/* ---------- série anual ---------- */}
         <section style={{ paddingTop: "clamp(2rem, 4vw, 3rem)" }}>
-          <p className="eyebrow" style={{ marginBottom: "1.25rem" }}>Publicações por ano</p>
+          <h2 className="secao-art">Publicações por ano</h2>
           <SerieAnual dados={serie} />
         </section>
       </main>
 
       {/* ================= lateral ================= */}
       <aside className="lateral">
+        {/* capa da edição aberta */}
+        {atual && (
+          <CapaEdicao revista={r.title} label={atual.issue.label} ano={atual.issue.year}
+                      slug={atual.issue.slug} imagem={atual.issue.coverUrl} />
+        )}
+
         {/* enviar submissão */}
         <div className="bloco bloco--acao">
           <p className="bloco__titulo">Para autores</p>

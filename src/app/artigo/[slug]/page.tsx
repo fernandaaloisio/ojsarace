@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { artigoPorSlug, relacionados, metricasArtigo, palavrasTop, maisLidos } from "@/lib/queries";
 import ItemArtigo from "@/components/ItemArtigo";
 import Citar from "@/components/Citar";
+import CapaEdicao from "@/components/CapaEdicao";
 import MetricasArtigo from "@/components/MetricasArtigo";
 import { SerieMensal, IconeFicha, NuvemTermos } from "@/components/graficos";
 import RegistrarLeitura from "@/components/RegistrarLeitura";
@@ -336,13 +337,8 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
         <div className="aside-artigo">
           {/* capa gerada a partir dos dados da edição */}
           {a.issue && (
-            <Link className="capa" href={`/edicao/${a.issue.slug}`} aria-label={`Edição ${a.issue.label}`}>
-              <span className="capa__marca" aria-hidden />
-              <span className="capa__nome">{a.journal.title}</span>
-              <span className="capa__linha" aria-hidden />
-              <span className="capa__ed">{a.issue.label}</span>
-              {a.issue.year && <span className="capa__ano">{a.issue.year}</span>}
-            </Link>
+            <CapaEdicao revista={a.journal.title} label={a.issue.label} ano={a.issue.year}
+                        slug={a.issue.slug} imagem={a.issue.coverUrl} />
           )}
 
           {a.pdfUrl && (
