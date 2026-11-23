@@ -47,8 +47,8 @@
   /* O fallback dentro do var() importa: sem ele, se a variavel da fonte nao
      estiver definida neste elemento, o token inteiro vira invalido e o
      navegador cai no serif padrao em vez de usar a lista de reserva. */
-  --display: var(--font-display, "Archivo"), "Archivo", system-ui, sans-serif;
-  --sans:    var(--font-sans, "Source Sans 3"), "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --display: var(--font-display, "Bricolage Grotesque"), "Bricolage Grotesque", system-ui, sans-serif;
+  --sans:    var(--font-sans, "Schibsted Grotesk"), "Schibsted Grotesk", system-ui, -apple-system, sans-serif;
   --mono:    var(--font-mono, "DM Mono"), "DM Mono", ui-monospace, "SF Mono", monospace;
 
   /* medidas */
@@ -124,7 +124,7 @@ h1, h2, h3, h4 {
   font-family: var(--display);
   font-weight: 700;
   /* um aperto leve na largura: deixa o titulo denso sem virar condensada */
-  font-variation-settings: "wdth" 94;
+  font-variation-settings: "wdth" 92;
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin: 0;
@@ -566,7 +566,7 @@ a.tag:hover { border-color: var(--ember); color: var(--ember); background: color
 .artigo__titulo {
   max-width: 26ch;
   font-size: var(--step-3);
-  font-variation-settings: "wdth" 96;
+  font-variation-settings: "wdth" 94;
   font-weight: 700;
   /* o acervo guarda os titulos em caixa alta: em caixa alta o aperto
      atrapalha a leitura, entao aqui a letra respira um pouco */
@@ -1423,10 +1423,11 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 .metricas__grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--rule); }
 .metricas__item { padding: 0.9rem 1rem 1rem; border-right: 1px solid var(--rule); }
 .metricas__item:last-child { border-right: 0; }
+.metricas__icone { color: var(--marca); display: block; margin-bottom: 0.5rem; }
 .metricas__n {
   font-family: var(--display);
   font-size: var(--step-2);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -1621,3 +1622,113 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   margin-bottom: 0.4rem;
 }
 .barra__busca--gaveta input { width: 100%; }
+
+/* =========================================================================
+   GRÁFICOS DO BLOCO DE MÉTRICAS
+   SVG escrito à mão, sem biblioteca: três desenhos pequenos não justificam
+   cem kilobytes no navegador do leitor, e assim herdam as cores do tema.
+   ========================================================================= */
+
+.metricas__graficos {
+  display: grid;
+  gap: 1.15rem;
+  padding: 1rem 1.1rem 0.4rem;
+  border-top: 1px solid var(--rule);
+}
+
+.grafico { display: grid; gap: 0.45rem; }
+
+.grafico__rotulo {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.grafico__rotulo b {
+  font-weight: 500;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.grafico__svg { width: 100%; height: 2.6rem; display: block; overflow: visible; }
+
+.grafico__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-4);
+  margin: 0;
+}
+.grafico__legenda span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.grafico__legenda i { width: 7px; height: 7px; flex: none; }
+.grafico__datas { margin-left: auto; }
+
+.grafico__vazio,
+.grafico__nota {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-4);
+  line-height: 1.5;
+  margin: 0;
+}
+.grafico__nota b { color: var(--ink-2); font-weight: 500; }
+
+/* ---------- barras das duas bases ---------- */
+
+.barras { display: grid; gap: 0.4rem; }
+.barras__linha {
+  display: grid;
+  grid-template-columns: 1fr 2.6fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+.barras__rot {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+.barras__trilho { height: 0.55rem; background: var(--paper-3); display: block; }
+.barras__preenche { display: block; height: 100%; }
+.barras__val {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+  text-align: right;
+}
+
+/* ---------- régua de posição no acervo ---------- */
+
+.regua { display: grid; gap: 0.3rem; }
+.regua__trilho {
+  position: relative;
+  display: block;
+  height: 0.45rem;
+  background: var(--paper-3);
+}
+.regua__ate { position: absolute; inset: 0 auto 0 0; background: var(--marca-veu); display: block; }
+.regua__marca {
+  position: absolute;
+  top: -0.17rem;
+  width: 3px;
+  height: 0.8rem;
+  background: var(--ember);
+  transform: translateX(-1.5px);
+}
+.regua__pontas {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--ink-4);
+  letter-spacing: 0.04em;
+}

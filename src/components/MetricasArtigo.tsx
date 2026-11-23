@@ -1,5 +1,6 @@
 import { num, dataLonga } from "@/lib/text";
 import { estadoScholar, buscaScholar } from "@/lib/scholar";
+import { SerieDiaria, DuasBases, Posicao, Icone, type Dia } from "@/components/graficos";
 
 export type Metricas = {
   visualizacoes: number;
@@ -14,19 +15,22 @@ export type Metricas = {
   scholarEm: Date | null;
   scholarUrl: string | null;
   scholarDemo: boolean;
+  serie: Dia[];
+  percentil: number | null;
+  totalComDoi: number;
 };
 
 /**
  * Bloco de métricas do artigo, ao lado do botão de download.
  *
- * Visualizações e downloads são contados pelo próprio portal, somados ao que
- * veio do OJS. O terceiro indicador é a contagem do Google Acadêmico, que a
- * editoria confere à mão: o Scholar não tem API, então não há como um script
- * afirmar o número. Os três estados possíveis estão no comentário de
- * `src/lib/scholar.ts`.
+ * Três números em cima, cada um com seu sinal, e abaixo os desenhos que dão
+ * sentido a eles: quando os acessos aconteceram, como as duas bases de citação
+ * se comparam e onde o artigo está na distribuição da revista. Número sozinho
+ * não diz se é muito ou pouco.
  *
- * O número do Crossref aparece abaixo, em linha separada e com a fonte dita,
- * nunca somado ao do Scholar: a mesma citação costuma constar nas duas bases.
+ * Visualizações e downloads são contados pelo próprio portal. A contagem do
+ * Google Acadêmico é conferida à mão pela editoria, pelos motivos explicados
+ * em `src/lib/scholar.ts`.
  */
 export default function MetricasArtigo({ m }: { m: Metricas }) {
   const estado = estadoScholar(m.scholar);
@@ -38,16 +42,19 @@ export default function MetricasArtigo({ m }: { m: Metricas }) {
 
       <div className="metricas__grade">
         <div className="metricas__item">
+          <Icone tipo="leitura" />
           <span className="metricas__n">{num(m.visualizacoes)}</span>
           <span className="metricas__r">Visualizações da página</span>
         </div>
 
         <div className="metricas__item">
+          <Icone tipo="download" />
           <span className="metricas__n">{num(m.downloads)}</span>
           <span className="metricas__r">Downloads do PDF</span>
         </div>
 
         <div className="metricas__item">
+          <Icone tipo="citacao" />
           {estado === "sem_conferencia" ? (
             <span className="metricas__sem">Contagem indisponível</span>
           ) : (
@@ -59,7 +66,20 @@ export default function MetricasArtigo({ m }: { m: Metricas }) {
         </div>
       </div>
 
-      {/* ---------- estado da contagem do Scholar ---------- */}
+      {/* ---------- desenhos ---------- */}
+      <div className="metricas__graficos">
+        <SerieDiaria serie={m.serie} />
+
+        {estado !== "sem_conferencia" && (
+          <DuasBases scholar={m.scholar} crossref={m.crossref} fonteCrossref={m.crossrefFonte} />
+        )}
+
+        {m.temDoi && m.crossrefFonte && m.percentil != null && (
+          <Posicao percentil={m.percentil} total={m.totalComDoi} />
+        )}
+      </div>
+
+      {/* ---------- procedência dos números ---------- */}
       {estado === "sem_conferencia" ? (
         <div className="metricas__acao">
           <p className="metricas__fonte" style={{ marginBottom: "0.7rem" }}>
@@ -95,18 +115,16 @@ export default function MetricasArtigo({ m }: { m: Metricas }) {
         </p>
       )}
 
-      {/* ---------- Crossref, como segunda leitura ---------- */}
       {m.temDoi && m.crossrefFonte && (
         <p className="metricas__fonte metricas__fonte--extra">
-          O {m.crossrefFonte} registra {num(m.crossref)}{" "}
-          {m.crossref === 1 ? "citação" : "citações"} para o DOI deste artigo
-          {m.crossrefEm && <>, em consulta de {dataLonga(m.crossrefEm)}</>}. As duas
-          bases são contadas em separado, porque a mesma citação pode estar nas duas.
+          O {m.crossrefFonte} é consultado por programa
+          {m.crossrefEm && <>, a última vez em {dataLonga(m.crossrefEm)}</>}. As duas
+          bases aparecem em separado porque a mesma citação pode estar nas duas.
         </p>
       )}
 
       <p className="metricas__fonte metricas__fonte--extra">
-        Visualizações e downloads são contados pelo próprio portal.
+        Visualizações e downloads são contados pelo próprio portal, sem robôs.
       </p>
     </section>
   );

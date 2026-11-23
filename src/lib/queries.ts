@@ -338,7 +338,42 @@ export const metricasArtigo = cache(async (id: string) => {
               scholarCount: true, scholarCheckedAt: true, scholarUrl: true, scholarDemo: true },
   });
   if (!a) return null;
+
+  // Serie diaria dos ultimos 30 dias, para o grafico do bloco de metricas.
+  // AccessLog guarda o dia ja em texto AAAA-MM-DD, entao agrupar e barato.
+  const inicio = new Date(Date.now() - 29 * 86_400_000);
+  const diaInicio = inicio.toISOString().slice(0, 10);
+  const registros = await db.accessLog.groupBy({
+    by: ["day", "kind"],
+    where: { articleId: id, day: { gte: diaInicio } },
+    _count: { _all: true },
+  });
+
+  const porDia = new Map<string, { leituras: number; baixados: number }>();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(inicio.getTime() + i * 86_400_000).toISOString().slice(0, 10);
+    porDia.set(d, { leituras: 0, baixados: 0 });
+  }
+  for (const r of registros) {
+    const alvo = porDia.get(r.day);
+    if (!alvo) continue;
+    if (r.kind === "download") alvo.baixados += r._count._all;
+    else alvo.leituras += r._count._all;
+  }
+  const serie = [...porDia.entries()].map(([dia, v]) => ({ dia, ...v }));
+
+  // Onde este artigo esta na distribuicao de citacoes da revista. Diz mais
+  // que o numero cru: 12 citacoes pode ser muito ou pouco conforme o acervo.
+  const [totalComDoi, abaixo] = await Promise.all([
+    db.article.count({ where: { doi: { not: null } } }),
+    db.article.count({ where: { doi: { not: null }, citationCount: { lt: a.citationCount } } }),
+  ]);
+  const percentil = totalComDoi > 0 ? Math.round((abaixo / totalComDoi) * 100) : null;
+
   return {
+    serie,
+    percentil,
+    totalComDoi,
     visualizacoes: a.viewCount + a.legacyViews,
     downloads: a.downloadCount + a.legacyDownloads,
     // Crossref, colhido por script: fica como dado secundario, declarado.

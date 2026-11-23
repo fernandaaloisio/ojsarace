@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, Source_Sans_3, DM_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Schibsted_Grotesk, DM_Mono } from "next/font/google";
 import "./globals.css";
 import Masthead from "@/components/Masthead";
 import Banner from "@/components/Banner";
@@ -8,18 +8,21 @@ import { revista, paginasNav, paginasTodas } from "@/lib/queries";
 import { usuarioAtual } from "@/lib/auth";
 import { SITE_URL } from "@/lib/text";
 
-/* Archivo nos titulos, em peso alto e um pouco estreitada: da a voz grafica
-   da marca sem depender de uma fonte paga. O eixo wdth permite o aperto. */
-const display = Archivo({
-  subsets: ["latin", "latin-ext"],
+/* Bricolage Grotesque nos titulos. E um desenho recente, de contraste
+   irregular e largura variavel, que nao aparece nos temas prontos: e dele
+   que vem o carater da revista. Os eixos opsz e wdth deixam o titulo
+   apertar sozinho conforme o tamanho. */
+const display = Bricolage_Grotesque({
+  subsets: ["latin"],
   variable: "--font-display",
-  axes: ["wdth"],
+  axes: ["opsz", "wdth"],
   display: "swap",
 });
-/* Source Sans 3 no texto corrido: desenhada para leitura em tela, com
-   numeros e acentuacao solidos, que e o que um artigo cientifico exige. */
-const sans = Source_Sans_3({
-  subsets: ["latin", "latin-ext"],
+/* Schibsted Grotesk no texto. Feita para jornal escandinavo: letra estreita,
+   aberturas francas e numeros firmes, que e o que um artigo pede. Nao e
+   nenhuma das sans que todo site usa. */
+const sans = Schibsted_Grotesk({
+  subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
