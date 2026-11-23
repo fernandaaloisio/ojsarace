@@ -363,6 +363,50 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
             <Citar formatos={formatos} />
           </div>
 
+          {/* ---------- registro do DOI ---------- */}
+          <div className="caixa">
+            <div className="caixa__titulo">Registro DOI</div>
+            {a.doi ? (
+              <>
+                <p className="doi-reg">
+                  <a className="doi-reg__num" href={`https://doi.org/${a.doi}`} rel="noreferrer">
+                    https://doi.org/{a.doi}
+                  </a>
+                </p>
+                <dl className="ficha">
+                  <div>
+                    <dt>Agência</dt>
+                    <dd><a href="https://www.crossref.org/" rel="noreferrer">Crossref</a></dd>
+                  </div>
+                  {a.journal.doiPrefix && (
+                    <div><dt>Prefixo</dt><dd>{a.journal.doiPrefix}</dd></div>
+                  )}
+                  <div><dt>Sufixo</dt><dd>{a.doi.split("/").slice(1).join("/")}</dd></div>
+                  {a.publishedAt && (
+                    <div><dt>Depositado</dt><dd>{dataLonga(a.publishedAt)}</dd></div>
+                  )}
+                </dl>
+                <p className="doi-reg__nota">
+                  O DOI é o endereço permanente do artigo. Mesmo que o portal mude
+                  de domínio, este link continua levando ao texto. Use-o ao citar.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="doi-reg__nota" style={{ marginTop: "1rem" }}>
+                  Este artigo ainda não tem DOI registrado. Sem ele o trabalho não
+                  entra nas bases que dependem desse identificador, e não há como
+                  consultar citações por programa.
+                </p>
+                {a.journal.doiPrefix && (
+                  <dl className="ficha">
+                    <div><dt>Prefixo da revista</dt><dd>{a.journal.doiPrefix}</dd></div>
+                  </dl>
+                )}
+              </>
+            )}
+          </div>
+
           <div className="caixa">
             <div className="caixa__titulo">Metadados abertos</div>
             <ul className="mono" style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.55rem", fontSize: "var(--step--2)" }}>

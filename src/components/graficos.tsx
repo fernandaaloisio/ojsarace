@@ -115,9 +115,23 @@ export function DuasBases({
  * Onde o artigo está na distribuição de citações da revista. Um número cru
  * não diz se é muito ou pouco; a régua diz.
  */
-export function Posicao({ percentil, total }: { percentil: number; total: number }) {
-  // "mais citado que 100%" seria impossivel, ja que o proprio artigo esta no
-  // conjunto. Dizer em que faixa do topo ele esta e mais honesto e mais claro.
+export function Posicao({
+  percentil, total, citacoes,
+}: { percentil: number; total: number; citacoes: number }) {
+  // Sem citacao nenhuma nao ha posicao a mostrar: dizer "entre os 100% mais
+  // citados" seria uma frase sem sentido, e foi o que a regua fazia antes.
+  if (citacoes === 0) {
+    return (
+      <div className="grafico">
+        <p className="grafico__rotulo">Posição no acervo</p>
+        <p className="grafico__vazio">
+          O Crossref ainda não registra citações para este artigo, então não há
+          posição a comparar com o resto do acervo.
+        </p>
+      </div>
+    );
+  }
+
   const topo = Math.max(1, 100 - percentil);
   const legenda = `Este artigo está entre os ${topo}% mais citados dos ${num(total)} artigos da revista com DOI`;
 

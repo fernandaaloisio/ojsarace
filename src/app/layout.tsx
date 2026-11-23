@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Schibsted_Grotesk, DM_Mono } from "next/font/google";
+import { Libre_Franklin, DM_Mono } from "next/font/google";
 import "./globals.css";
 import Masthead from "@/components/Masthead";
 import Banner from "@/components/Banner";
@@ -8,21 +8,13 @@ import { revista, paginasNav, paginasTodas } from "@/lib/queries";
 import { usuarioAtual } from "@/lib/auth";
 import { SITE_URL } from "@/lib/text";
 
-/* Bricolage Grotesque nos titulos. E um desenho recente, de contraste
-   irregular e largura variavel, que nao aparece nos temas prontos: e dele
-   que vem o carater da revista. Os eixos opsz e wdth deixam o titulo
-   apertar sozinho conforme o tamanho. */
-const display = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-display",
-  axes: ["opsz", "wdth"],
-  display: "swap",
-});
-/* Schibsted Grotesk no texto. Feita para jornal escandinavo: letra estreita,
-   aberturas francas e numeros firmes, que e o que um artigo pede. Nao e
-   nenhuma das sans que todo site usa. */
-const sans = Schibsted_Grotesk({
-  subsets: ["latin"],
+/* Libre Franklin, uma so familia, em pesos diferentes.
+   Uma gotica americana classica, redesenhada para tela: nao tem a estranheza
+   das fontes de carater forte nem a neutralidade de catalogo das sans que
+   todo tema usa. O peso 800 nos titulos e o 400 no texto ja criam hierarquia
+   suficiente, e uma familia so deixa a pagina coesa. */
+const franklin = Libre_Franklin({
+  subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -91,7 +83,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
        elas chegavam tarde demais, --sans virava invalido e o navegador caia
        no serif padrao. */
     <html lang="pt-BR" suppressHydrationWarning
-          className={`${display.variable} ${sans.variable} ${mono.variable}`}>
+          className={`${franklin.variable} ${mono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
         <link rel="alternate" type="application/rss+xml" title={`${r.title} — últimos artigos`} href="/feed.xml" />

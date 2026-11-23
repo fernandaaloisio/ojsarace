@@ -47,8 +47,8 @@
   /* O fallback dentro do var() importa: sem ele, se a variavel da fonte nao
      estiver definida neste elemento, o token inteiro vira invalido e o
      navegador cai no serif padrao em vez de usar a lista de reserva. */
-  --display: var(--font-display, "Bricolage Grotesque"), "Bricolage Grotesque", system-ui, sans-serif;
-  --sans:    var(--font-sans, "Schibsted Grotesk"), "Schibsted Grotesk", system-ui, -apple-system, sans-serif;
+  --display: var(--font-sans, "Libre Franklin"), "Libre Franklin", system-ui, sans-serif;
+  --sans:    var(--font-sans, "Libre Franklin"), "Libre Franklin", system-ui, -apple-system, sans-serif;
   --mono:    var(--font-mono, "DM Mono"), "DM Mono", ui-monospace, "SF Mono", monospace;
 
   /* medidas */
@@ -124,7 +124,6 @@ h1, h2, h3, h4 {
   font-family: var(--display);
   font-weight: 700;
   /* um aperto leve na largura: deixa o titulo denso sem virar condensada */
-  font-variation-settings: "wdth" 92;
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin: 0;
@@ -269,7 +268,6 @@ img, svg { max-width: 100%; display: block; }
 .marca__nome {
   font-family: var(--display);
   font-size: var(--step-2);
-  font-variation-settings: "wdth" 92;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -566,7 +564,6 @@ a.tag:hover { border-color: var(--ember); color: var(--ember); background: color
 .artigo__titulo {
   max-width: 26ch;
   font-size: var(--step-3);
-  font-variation-settings: "wdth" 94;
   font-weight: 700;
   /* o acervo guarda os titulos em caixa alta: em caixa alta o aperto
      atrapalha a leitura, entao aqui a letra respira um pouco */
@@ -613,19 +610,29 @@ a.tag:hover { border-color: var(--ember); color: var(--ember); background: color
 .aside-artigo { display: grid; gap: 1.75rem; }
 @media (max-width: 1080px) { .aside-artigo { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); } }
 
+/* Caixa com cabecalho em barra cheia: a cor institucional marca cada bloco,
+   do jeito que as revistas organizam a coluna lateral do artigo. */
 .caixa {
   border: 1px solid var(--rule);
-  padding: 1.1rem 1.15rem 1.25rem;
   background: var(--paper-2);
+  padding: 0;
+  overflow: hidden;
 }
+.caixa > *:not(.caixa__titulo) { padding-inline: 1.15rem; }
+.caixa > *:not(.caixa__titulo):first-of-type { padding-top: 1rem; }
+.caixa > *:last-child { padding-bottom: 1.15rem; }
 .caixa__titulo {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: var(--step--2);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--ink-3);
-  margin-bottom: 0.85rem;
+  letter-spacing: 0.09em;
+  color: #ffffff;
+  background: var(--marca);
+  padding: 0.55rem 1.15rem;
+  margin: 0 0 0.3rem;
 }
+:root[data-tema="noite"] .caixa__titulo { color: var(--night); }
 
 /* ---------- 9. busca ---------- */
 .busca-campo {
@@ -1192,7 +1199,6 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   letter-spacing: 0.02em;
   line-height: 0.95;
   color: #f4f8f6;
-  font-variation-settings: "wdth" 92;
   text-transform: uppercase;
 }
 .banner__logo { max-height: clamp(3rem, 8vw, 5.5rem); width: auto; }
@@ -1242,7 +1248,6 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   font-size: var(--step-0);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-variation-settings: "wdth" 92;
   flex: none;
 }
 /* A marca desenhada em CSS: semicirculo sobre a linha, as mesmas duas formas
@@ -1363,22 +1368,31 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 .bloco {
   border: 1px solid var(--rule);
   background: var(--paper-2);
-  padding: 1.1rem 1.2rem 1.25rem;
+  padding: 0 1.2rem 1.25rem;
+  overflow: hidden;
 }
 .bloco__titulo {
-  font-family: var(--display);
+  font-family: var(--sans);
   font-size: var(--step--2);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: var(--ink-2);
-  margin: 0 0 0.9rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--marca);
+  color: #ffffff;
+  background: var(--marca);
+  margin: 0 -1.2rem 1rem;
+  padding: 0.55rem 1.2rem;
 }
+:root[data-tema="noite"] .bloco__titulo { color: var(--night); }
 /* o bloco de chamada herda a cor institucional, nao o preto */
 .bloco--acao { background: var(--marca); border-color: var(--marca); }
-.bloco--acao .bloco__titulo { color: #ffffff; border-bottom-color: rgba(255, 255, 255, 0.3); }
+.bloco--acao { padding-top: 1.1rem; }
+.bloco--acao .bloco__titulo {
+  background: none;
+  color: #ffffff;
+  margin: 0 0 0.9rem;
+  padding: 0 0 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
 .bloco--acao p { color: rgba(255, 255, 255, 0.82); font-size: var(--step--1); line-height: 1.55; }
 /* dentro do bloco verde o botao se inverte, senao some no fundo */
 .bloco--acao .btn--solid {
@@ -1411,15 +1425,17 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
 
 .metricas { border: 1px solid var(--rule); background: var(--paper-2); }
 .metricas__titulo {
-  font-family: var(--display);
+  font-family: var(--sans);
   font-size: var(--step--2);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: var(--ink-2);
-  padding: 0.9rem 1.1rem 0.75rem;
-  border-bottom: 2px solid var(--marca);
+  color: #ffffff;
+  background: var(--marca);
+  padding: 0.55rem 1.1rem;
+  margin: 0;
 }
+:root[data-tema="noite"] .metricas__titulo { color: var(--night); }
 .metricas__grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--rule); }
 .metricas__item { padding: 0.9rem 1rem 1rem; border-right: 1px solid var(--rule); }
 .metricas__item:last-child { border-right: 0; }
@@ -1731,4 +1747,23 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   font-size: 0.55rem;
   color: var(--ink-4);
   letter-spacing: 0.04em;
+}
+
+/* ---------- bloco de registro do DOI ---------- */
+
+.doi-reg { margin: 0 0 0.9rem; }
+.doi-reg__num {
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  color: var(--ember);
+  word-break: break-all;
+  line-height: 1.45;
+}
+.doi-reg__num:hover { color: var(--ember-deep); }
+.doi-reg__nota {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-4);
+  line-height: 1.55;
+  margin: 0.9rem 0 0;
 }

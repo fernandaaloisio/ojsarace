@@ -75,7 +75,7 @@ export default function MetricasArtigo({ m }: { m: Metricas }) {
         )}
 
         {m.temDoi && m.crossrefFonte && m.percentil != null && (
-          <Posicao percentil={m.percentil} total={m.totalComDoi} />
+          <Posicao percentil={m.percentil} total={m.totalComDoi} citacoes={m.crossref} />
         )}
       </div>
 
