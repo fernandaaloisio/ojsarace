@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+*.db
+*.db-journal
+data/*.json
+data/*.ndjson
+.env
+.DS_Store
+storage/
+.netlify/
+tsconfig.tsbuildinfo
+# gerado por scripts/gerar-esboco.mjs
+esboco-portal.html
+public/esboco.html

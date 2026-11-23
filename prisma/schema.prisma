@@ -1,0 +1,765 @@
+// Aurora - modelo de dados da plataforma de periodicos
+//
+// Postgres, tanto em producao (Netlify DB, sobre Neon) quanto localmente.
+// Em producao a string de conexao chega por NETLIFY_DB_URL; src/lib/db.ts
+// resolve a variavel certa para cada ambiente.
+
+generator client {
+  provider = "prisma-client-js"
+  // rhel-openssl-3.0.x e o alvo das funcoes serverless da Netlify (AWS Lambda);
+  // sem ele o cliente Prisma nao encontra o motor de consulta em producao.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Periodico. O modelo ja e multirrevista para nao travar a expansao,
+/// mas no momento ha um unico registro: ARACE.
+model Journal {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  acronym       String?
+  issn          String?
+  eissn         String?
+  doiPrefix     String?
+  publisher     String?
+  qualis        String?
+  description   String?
+  mission       String?
+  areas         String?  // JSON array
+  languages     String?  // JSON array
+  periodicity   String?
+  openAccess    Boolean  @default(true)
+  licenseUrl    String?
+  legacyBaseUrl String?
+  oaiBaseUrl    String?
+  accentHue     Int      @default(28)
+
+  /// Identidade visual trocavel pela equipe, sem mexer no codigo.
+  /// Os caminhos apontam para /api/imagem/<id>, servido do mesmo
+  /// armazenamento dos manuscritos.
+  bannerUrl     String?
+  bannerAlt     String?
+  /// object-position do banner, para escolher o enquadramento: "center 40%"
+  bannerFoco    String?  @default("center center")
+  logoUrl       String?
+  sobreImagem   String?
+  sobreTexto    String?
+  /// Endereco do modelo de artigo para autores.
+  templatesUrl  String?
+
+  issues   Issue[]
+  articles Article[]
+  pages    StaticPage[]
+  board    BoardMember[]
+  indexers IndexerLink[]
+  harvests HarvestRun[]
+}
+
+/// Volume/numero. A Arace trabalha em fluxo continuo com fechamento mensal.
+model Issue {
+  id          String    @id @default(cuid())
+  journalId   String
+  journal     Journal   @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  volume      Int?
+  number      String?
+  year        Int?
+  label       String
+  slug        String
+  /// Chave numerica de ordenacao: ano*10000 + volume*100 + numero.
+  /// O numero e texto ("11", "esp"), entao nao serve para ordenar sozinho.
+  rank        Int       @default(0)
+  title       String?
+  coverUrl    String?
+  publishedAt DateTime?
+  legacyUrl   String?
+
+  articles Article[]
+
+  @@unique([journalId, slug])
+  @@index([journalId, rank])
+}
+
+model Section {
+  id        String    @id @default(cuid())
+  code      String    @unique // ART, EDT, ...
+  name      String
+  articles  Article[]
+}
+
+model Article {
+  id            String    @id @default(cuid())
+  journalId     String
+  journal       Journal   @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  issueId       String?
+  issue         Issue?    @relation(fields: [issueId], references: [id])
+  sectionId     String?
+  section       Section?  @relation(fields: [sectionId], references: [id])
+
+  slug          String    @unique
+  title         String
+  subtitle      String?
+  abstract      String?
+  language      String    @default("pt")
+  type          String    @default("article")
+
+  doi           String?   @unique
+  elocationId   String?   // e15187
+  firstPage     String?
+  lastPage      String?
+
+  publishedAt   DateTime?
+  acceptedAt    DateTime?
+  receivedAt    DateTime?
+
+  pdfUrl        String?
+  legacyUrl     String?
+  oaiIdentifier String?   @unique
+  license       String?
+
+  citationCount Int       @default(0)
+  referenceCount Int      @default(0)
+  viewCount     Int       @default(0)
+  downloadCount Int       @default(0)
+  /// Fonte e data da ultima contagem de citacoes, exibidas ao leitor.
+  citationSource String?
+  citationAt    DateTime?
+  /// Totais herdados do OJS, somados aos contados aqui.
+  legacyViews   Int       @default(0)
+  legacyDownloads Int     @default(0)
+
+  searchBlob    String?   // titulo + resumo + autores + palavras-chave, sem acento
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  authors    ArticleAuthor[]
+  keywords   ArticleKeyword[]
+  references Reference[]
+
+  @@index([journalId, publishedAt])
+  @@index([issueId])
+  @@index([citationCount])
+  @@index([viewCount])
+}
+
+model Author {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String  // forma de exibicao: Nome Sobrenome
+  sortName    String  // Sobrenome, Nome
+  orcid       String?
+  affiliation String?
+  country     String?
+  lattes      String?
+  email       String?
+  articleCount Int    @default(0)
+
+  articles ArticleAuthor[]
+
+  @@index([sortName])
+}
+
+model ArticleAuthor {
+  articleId   String
+  article     Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      Author  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  position    Int     @default(0)
+  role        String  @default("author")
+  isCorresponding Boolean @default(false)
+  affiliation String?
+
+  @@id([articleId, authorId])
+  @@index([authorId])
+}
+
+model Keyword {
+  id       String @id @default(cuid())
+  slug     String @unique
+  term     String
+  normal   String @unique // minusculo sem acento
+  count    Int    @default(0)
+
+  articles ArticleKeyword[]
+}
+
+model ArticleKeyword {
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  keywordId String
+  keyword   Keyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, keywordId])
+  @@index([keywordId])
+}
+
+/// Referencias vindas do Crossref, usadas para o grafo de citacoes.
+model Reference {
+  id         String  @id @default(cuid())
+  articleId  String
+  article    Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  position   Int     @default(0)
+  doi        String?
+  unstructured String?
+  year       String?
+  journalTitle String?
+
+  @@index([articleId])
+  @@index([doi])
+}
+
+model BoardMember {
+  id          String  @id @default(cuid())
+  journalId   String
+  journal     Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  name        String
+  role        String  // editor-chefe, editor-associado, conselho
+  affiliation String?
+  orcid       String?
+  country     String?
+  position    Int     @default(0)
+}
+
+model StaticPage {
+  id        String   @id @default(cuid())
+  journalId String
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  slug      String
+  title     String
+  summary   String?
+  body      String   // markdown leve
+  nav       Boolean  @default(false)
+  position  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([journalId, slug])
+}
+
+/// Vinculo com cada base indexadora, com estado da ultima sincronizacao.
+model IndexerLink {
+  id          String    @id @default(cuid())
+  journalId   String
+  journal     Journal   @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  code        String    // crossref, doaj, scholar, latindex, diadorim, redib, base, openalex
+  name        String
+  kind        String    // push (depositamos) | pull (coletamos) | harvest (eles coletam)
+  status      String    @default("pendente") // ativo, pendente, erro
+  url         String?
+  identifier  String?
+  lastSyncAt  DateTime?
+  lastMessage String?
+  recordCount Int       @default(0)
+  autoSync    Boolean   @default(false)
+
+  @@unique([journalId, code])
+}
+
+/// Log de cada execucao de coleta, para auditoria.
+model HarvestRun {
+  id         String    @id @default(cuid())
+  journalId  String
+  journal    Journal   @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  source     String    // oai, crossref, openalex
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  status     String    @default("executando")
+  fetched    Int       @default(0)
+  created    Int       @default(0)
+  updated    Int       @default(0)
+  message    String?
+}
+
+// ===========================================================================
+//  FLUXO EDITORIAL
+//  Autor submete, editor faz triagem e distribui, parecerista avalia por link
+//  com token, editor decide. Cada passo deixa rastro em SubmissionEvent.
+// ===========================================================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String?   // nulo = conta criada por convite, ainda sem senha
+  name         String
+  orcid        String?
+  affiliation  String?
+  country      String?
+  lattes       String?
+  bio          String?
+  /// Áreas de interesse para distribuição de pareceres (JSON de strings).
+  expertise    String?
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  roles        UserRole[]
+  sessions     Session[]
+  submissoes   Submission[]       @relation("submetidoPor")
+  pareceres    ReviewAssignment[] @relation("parecerista")
+  decisoes     EditorialDecision[]
+  eventos      SubmissionEvent[]
+  arquivos     SubmissionFile[]
+
+  @@index([email])
+}
+
+/// autor | parecerista | editor | admin
+model UserRole {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   String
+
+  @@id([userId, role])
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  /// Guarda só o hash do token; o valor em claro fica apenas no cookie.
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+
+  @@index([userId])
+}
+
+model Submission {
+  id            String    @id @default(cuid())
+  journalId     String
+  /// Código legível usado na comunicação com os autores: ARE-2026-0001
+  code          String    @unique
+  title         String
+  subtitle      String?
+  abstract      String
+  language      String    @default("pt")
+  sectionCode   String    @default("ART")
+  /// Palavras-chave separadas por ponto e vírgula, como as diretrizes pedem.
+  keywords      String
+  tipo          String    @default("artigo")
+  /// Mensagem do autor para a editoria no ato da submissão.
+  mensagem      String?
+  /// Número do parecer do CEP, quando a pesquisa exige.
+  cep           String?
+  financiamento String?
+  conflito      String?
+  declaraIA     String?
+
+  status        String    @default("submetido")
+  round         Int       @default(1)
+
+  submittedById String
+  submittedBy   User      @relation("submetidoPor", fields: [submittedById], references: [id])
+
+  createdAt     DateTime  @default(now())
+  submittedAt   DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  triagemAt     DateTime?
+  decisionAt    DateTime?
+  /// Prazo interno da rodada corrente, para o controle de atrasos.
+  dueAt         DateTime?
+
+  /// Preenchido quando a submissão vira artigo publicado no acervo.
+  articleId     String?
+
+  authors     SubmissionAuthor[]
+  files       SubmissionFile[]
+  assignments ReviewAssignment[]
+  decisions   EditorialDecision[]
+  events      SubmissionEvent[]
+  notifications Notification[]
+
+  @@index([status, submittedAt])
+  @@index([journalId, status])
+}
+
+model SubmissionAuthor {
+  id              String     @id @default(cuid())
+  submissionId    String
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  name            String
+  email           String
+  orcid           String?
+  affiliation     String?
+  country         String?
+  titulacao       String?
+  position        Int        @default(0)
+  isCorresponding Boolean    @default(false)
+
+  @@index([submissionId])
+}
+
+/// manuscrito | anonimizado | suplementar | carta | versao-final | parecer
+model SubmissionFile {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  kind         String
+  originalName String
+  storedName   String     @unique
+  mime         String
+  size         Int
+  round        Int        @default(1)
+  uploadedById String?
+  uploadedBy   User?      @relation(fields: [uploadedById], references: [id])
+  uploadedAt   DateTime   @default(now())
+
+  @@index([submissionId, kind])
+}
+
+model ReviewAssignment {
+  id            String     @id @default(cuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  round         Int        @default(1)
+
+  /// O parecerista não precisa de conta: o acesso é pelo token do convite.
+  reviewerId    String?
+  reviewer      User?      @relation("parecerista", fields: [reviewerId], references: [id])
+  reviewerName  String
+  reviewerEmail String
+  tokenHash     String     @unique
+
+  /// convidado | aceito | recusado | concluido | cancelado | expirado
+  status        String     @default("convidado")
+  invitedAt     DateTime   @default(now())
+  respondedAt   DateTime?
+  dueAt         DateTime
+  completedAt   DateTime?
+  declineReason String?
+
+  /// aceitar | ajustes-menores | ajustes-maiores | recusar
+  recommendation    String?
+  commentsToAuthor  String?
+  commentsToEditor  String?
+  /// Notas de 1 a 5 por critério, em JSON.
+  scores            String?
+
+  @@index([submissionId, round])
+  @@index([reviewerEmail])
+  @@index([status, dueAt])
+}
+
+/// aceitar | ajustes-menores | ajustes-maiores | nova-submissao | recusar
+model EditorialDecision {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  round        Int        @default(1)
+  editorId     String
+  editor       User       @relation(fields: [editorId], references: [id])
+  decision     String
+  message      String
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId])
+}
+
+/// Trilha de auditoria da submissão: tudo que acontece vira um evento.
+model SubmissionEvent {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  type         String
+  message      String
+  actorId      String?
+  actor        User?      @relation(fields: [actorId], references: [id])
+  /// true = visível para o autor no acompanhamento da submissão.
+  publico      Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId, createdAt])
+}
+
+/// Fila de mensagens. Sem SMTP configurado, fica em "pendente" e pode ser
+/// lida e copiada no painel; com SMTP, o envio marca como "enviada".
+model Notification {
+  id           String      @id @default(cuid())
+  submissionId String?
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  toEmail      String
+  toName       String
+  subject      String
+  body         String
+  kind         String
+  status       String      @default("pendente")
+  createdAt    DateTime    @default(now())
+  sentAt       DateTime?
+  error        String?
+
+  @@index([status, createdAt])
+}
+
+/// Numeração sequencial dos códigos de submissão, por ano.
+model Counter {
+  key   String @id
+  value Int    @default(0)
+}
+
+// ===========================================================================
+//  FLUXO EDITORIAL
+//  Autor submete, editor faz triagem e distribui, parecerista avalia por link
+//  com token, editor decide. Cada passo deixa rastro em SubmissionEvent.
+// ===========================================================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String?   // nulo = conta criada por convite, ainda sem senha
+  name         String
+  orcid        String?
+  affiliation  String?
+  country      String?
+  lattes       String?
+  bio          String?
+  /// Áreas de interesse para distribuição de pareceres (JSON de strings).
+  expertise    String?
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  roles        UserRole[]
+  sessions     Session[]
+  submissoes   Submission[]       @relation("submetidoPor")
+  pareceres    ReviewAssignment[] @relation("parecerista")
+  decisoes     EditorialDecision[]
+  eventos      SubmissionEvent[]
+  arquivos     SubmissionFile[]
+
+  @@index([email])
+}
+
+/// autor | parecerista | editor | admin
+model UserRole {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   String
+
+  @@id([userId, role])
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  /// Guarda só o hash do token; o valor em claro fica apenas no cookie.
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+
+  @@index([userId])
+}
+
+model Submission {
+  id            String    @id @default(cuid())
+  journalId     String
+  /// Código legível usado na comunicação com os autores: ARE-2026-0001
+  code          String    @unique
+  title         String
+  subtitle      String?
+  abstract      String
+  language      String    @default("pt")
+  sectionCode   String    @default("ART")
+  /// Palavras-chave separadas por ponto e vírgula, como as diretrizes pedem.
+  keywords      String
+  tipo          String    @default("artigo")
+  /// Mensagem do autor para a editoria no ato da submissão.
+  mensagem      String?
+  /// Número do parecer do CEP, quando a pesquisa exige.
+  cep           String?
+  financiamento String?
+  conflito      String?
+  declaraIA     String?
+
+  status        String    @default("submetido")
+  round         Int       @default(1)
+
+  submittedById String
+  submittedBy   User      @relation("submetidoPor", fields: [submittedById], references: [id])
+
+  createdAt     DateTime  @default(now())
+  submittedAt   DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  triagemAt     DateTime?
+  decisionAt    DateTime?
+  /// Prazo interno da rodada corrente, para o controle de atrasos.
+  dueAt         DateTime?
+
+  /// Preenchido quando a submissão vira artigo publicado no acervo.
+  articleId     String?
+
+  authors     SubmissionAuthor[]
+  files       SubmissionFile[]
+  assignments ReviewAssignment[]
+  decisions   EditorialDecision[]
+  events      SubmissionEvent[]
+  notifications Notification[]
+
+  @@index([status, submittedAt])
+  @@index([journalId, status])
+}
+
+model SubmissionAuthor {
+  id              String     @id @default(cuid())
+  submissionId    String
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  name            String
+  email           String
+  orcid           String?
+  affiliation     String?
+  country         String?
+  titulacao       String?
+  position        Int        @default(0)
+  isCorresponding Boolean    @default(false)
+
+  @@index([submissionId])
+}
+
+/// manuscrito | anonimizado | suplementar | carta | versao-final | parecer
+model SubmissionFile {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  kind         String
+  originalName String
+  storedName   String     @unique
+  mime         String
+  size         Int
+  round        Int        @default(1)
+  uploadedById String?
+  uploadedBy   User?      @relation(fields: [uploadedById], references: [id])
+  uploadedAt   DateTime   @default(now())
+
+  @@index([submissionId, kind])
+}
+
+model ReviewAssignment {
+  id            String     @id @default(cuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  round         Int        @default(1)
+
+  /// O parecerista não precisa de conta: o acesso é pelo token do convite.
+  reviewerId    String?
+  reviewer      User?      @relation("parecerista", fields: [reviewerId], references: [id])
+  reviewerName  String
+  reviewerEmail String
+  tokenHash     String     @unique
+
+  /// convidado | aceito | recusado | concluido | cancelado | expirado
+  status        String     @default("convidado")
+  invitedAt     DateTime   @default(now())
+  respondedAt   DateTime?
+  dueAt         DateTime
+  completedAt   DateTime?
+  declineReason String?
+
+  /// aceitar | ajustes-menores | ajustes-maiores | recusar
+  recommendation    String?
+  commentsToAuthor  String?
+  commentsToEditor  String?
+  /// Notas de 1 a 5 por critério, em JSON.
+  scores            String?
+
+  @@index([submissionId, round])
+  @@index([reviewerEmail])
+  @@index([status, dueAt])
+}
+
+/// aceitar | ajustes-menores | ajustes-maiores | nova-submissao | recusar
+model EditorialDecision {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  round        Int        @default(1)
+  editorId     String
+  editor       User       @relation(fields: [editorId], references: [id])
+  decision     String
+  message      String
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId])
+}
+
+/// Trilha de auditoria da submissão: tudo que acontece vira um evento.
+model SubmissionEvent {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  type         String
+  message      String
+  actorId      String?
+  actor        User?      @relation(fields: [actorId], references: [id])
+  /// true = visível para o autor no acompanhamento da submissão.
+  publico      Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId, createdAt])
+}
+
+/// Fila de mensagens. Sem SMTP configurado, fica em "pendente" e pode ser
+/// lida e copiada no painel; com SMTP, o envio marca como "enviada".
+model Notification {
+  id           String      @id @default(cuid())
+  submissionId String?
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  toEmail      String
+  toName       String
+  subject      String
+  body         String
+  kind         String
+  status       String      @default("pendente")
+  createdAt    DateTime    @default(now())
+  sentAt       DateTime?
+  error        String?
+
+  @@index([status, createdAt])
+}
+
+/// Numeração sequencial dos códigos de submissão, por ano.
+model Counter {
+  key   String @id
+  value Int    @default(0)
+}
+
+
+/// Imagens da identidade visual enviadas pela equipe (banner, logo,
+/// imagem institucional). Ficam no mesmo armazenamento dos manuscritos,
+/// mas sao publicas: quem serve e /api/imagem/[id].
+model SiteImage {
+  id           String   @id @default(cuid())
+  journalId    String
+  kind         String   // banner | logo | sobre
+  originalName String
+  storedName   String   @unique
+  mime         String
+  size         Int
+  width        Int?
+  height       Int?
+  uploadedById String?
+  uploadedAt   DateTime @default(now())
+
+  @@index([journalId, kind])
+}
+
+/// Registro bruto de acesso, para a contagem de visualizacoes e downloads
+/// nao depender de servico externo. Uma linha por evento, agregada no
+/// contador do artigo.
+model AccessLog {
+  id        String   @id @default(cuid())
+  articleId String
+  kind      String   // view | download
+  day       String   // AAAA-MM-DD, para agrupar sem varrer tudo
+  createdAt DateTime @default(now())
+
+  @@index([articleId, kind])
+  @@index([day])
+}
