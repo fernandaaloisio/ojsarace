@@ -15,30 +15,31 @@
 :root {
   /* superfícies: branco de verdade, com um cinza esverdeado para blocos */
   --paper:        #ffffff;
-  --paper-2:      #f4f7f5;
-  --paper-3:      #e8ede9;
+  --paper-2:      #faf8f4;
+  --paper-3:      #efeae1;
 
   /* tinta com fundo verde, para não destoar da cor institucional */
-  --ink:          #111b17;
-  --ink-2:        #2f403a;
-  --ink-3:        #5c6b65;
-  --ink-4:        #8a9690;
-  --rule:         #dde4e0;
-  --rule-soft:    #eaefec;
+  --ink:          #1a1611;
+  --ink-2:        #403a32;
+  --ink-3:        #6b6459;
+  --ink-4:        #968e81;
+  --rule:         #e3dfd7;
+  --rule-soft:    #eeebe5;
 
-  /* cor institucional: verde profundo */
-  --marca:        #0f4539;
-  --marca-2:      #0a3129;
-  --marca-3:      #16604e;
-  --marca-veu:    #e6efea;
+  /* Cor institucional: o âmbar da logo da revista, lido do cabeçalho oficial.
+     Escurecido o suficiente para passar em contraste sobre o branco. */
+  --marca:        #a3570c;
+  --marca-2:      #7d4208;
+  --marca-3:      #c87d1c;
+  --marca-veu:    #fbf0df;
 
-  /* acento quente: barro. Usado em número, estado e chamada de ação. */
-  --ember:        #b4531f;
-  --ember-deep:   #8d3f16;
-  --dawn:         #d98824;
-  --horizon:      #e9c477;
-  --night:        #0a1512;
-  --moss:         var(--marca-3);
+  /* O sol da logo e o céu do amanhecer, para números e destaques. */
+  --ember:        #b85e0a;
+  --ember-deep:   #8a4506;
+  --dawn:         #e9a33c;
+  --horizon:      #f3cd8a;
+  --night:        #0b0805;
+  --moss:         #6b7a4a;
 
   --accent:       var(--marca);
   --accent-ink:   #ffffff;
@@ -75,26 +76,26 @@
 }
 
 :root[data-tema="noite"] {
-  --paper:        #0d1512;
-  --paper-2:      #131d19;
-  --paper-3:      #1b2723;
-  --ink:          #e8efea;
-  --ink-2:        #bcc8c2;
-  --ink-3:        #8c9a93;
-  --ink-4:        #66736d;
-  --rule:         #26332e;
-  --rule-soft:    #1c2723;
+  --paper:        #14110d;
+  --paper-2:      #1c1813;
+  --paper-3:      #26211a;
+  --ink:          #efeae1;
+  --ink-2:        #c8c1b5;
+  --ink-3:        #9a9183;
+  --ink-4:        #736c60;
+  --rule:         #332c23;
+  --rule-soft:    #26211a;
 
-  --marca:        #2f8e74;
-  --marca-2:      #246e5a;
-  --marca-3:      #49ab8e;
-  --marca-veu:    #14241f;
+  --marca:        #d9912f;
+  --marca-2:      #b5741f;
+  --marca-3:      #e9a33c;
+  --marca-veu:    #2a1d0d;
 
-  --ember:        #e07a42;
-  --ember-deep:   #b85c2c;
+  --ember:        #e08a42;
+  --ember-deep:   #b86c2c;
   --dawn:         #e9b25a;
   --horizon:      #8a6a33;
-  --night:        #070d0b;
+  --night:        #070503;
   --accent:       var(--marca-3);
   --accent-ink:   #0d1512;
 }
@@ -2153,3 +2154,29 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   align-items: start;
 }
 @media (max-width: 900px) { .edicao { grid-template-columns: minmax(0, 1fr); } }
+
+/* =========================================================================
+   CABEÇALHO OFICIAL DA REVISTA
+   A fotografia do amanhecer com a logo já composta, como está no OJS. Quando
+   é ela que entra, o portal não desenha nome nem marca por cima: a arte já
+   traz tudo, e sobrepor texto só sujaria.
+   ========================================================================= */
+
+.banner--oficial {
+  display: block;
+  background: var(--night);
+  min-height: 0;
+  padding-top: 0;
+}
+.banner__cabecalho {
+  display: block;
+  width: 100%;
+  max-width: 1657px;
+  margin: 0 auto;
+  height: auto;
+}
+.banner__faixa {
+  border-top: 1px solid rgba(233, 163, 60, 0.22);
+  padding-block: 0.55rem;
+}
+.banner--oficial .banner__dados { margin: 0; }

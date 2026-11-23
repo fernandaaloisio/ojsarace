@@ -23,7 +23,8 @@
     "local:sqlite": "node scripts/banco.mjs sqlite",
     "local:postgres": "node scripts/banco.mjs postgres",
     "producao": "node scripts/configurar-producao.mjs",
-    "exemplo:citacoes": "node scripts/exemplo-citacoes.mjs"
+    "exemplo:citacoes": "node scripts/exemplo-citacoes.mjs",
+    "capas": "node scripts/capas-ojs.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.10",
