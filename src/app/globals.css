@@ -2180,3 +2180,150 @@ a.volume:hover .volume__preenche { background: var(--dawn); }
   padding-block: 0.55rem;
 }
 .banner--oficial .banner__dados { margin: 0; }
+
+/* =========================================================================
+   FAIXA DE CREDENCIAIS
+   Logo abaixo do cabeçalho: o que a revista tem a dizer de si em números.
+   Os índices são calculados sobre o acervo, não digitados.
+   ========================================================================= */
+
+.credenciais {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.25rem 1.5rem;
+  border-top: 1px solid rgba(233, 163, 60, 0.22);
+  padding-block: 0.95rem 1.05rem;
+}
+.credenciais__item { display: grid; gap: 0.12rem; }
+.credenciais__n {
+  font-family: var(--sans);
+  font-size: var(--step-1);
+  font-weight: 700;
+  color: var(--dawn);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.credenciais__item--texto .credenciais__n {
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: rgba(244, 240, 232, 0.9);
+  align-self: end;
+}
+.credenciais__r {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(244, 240, 232, 0.55);
+  line-height: 1.3;
+}
+@media (max-width: 640px) {
+  .credenciais { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* =========================================================================
+   MURAL DE CAPAS DO ACERVO
+   As capas são arte da revista, uma por edição. Enfileiradas por ano, elas
+   contam a história do periódico melhor que qualquer gráfico de barras.
+   ========================================================================= */
+
+.ano { margin-bottom: clamp(2.25rem, 4vw, 3.25rem); }
+
+.ano__cabeca {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 2px solid var(--marca);
+}
+.ano__num {
+  font-family: var(--sans);
+  font-size: var(--step-2);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.ano__resumo {
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  color: var(--ink-4);
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.mural {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: clamp(1rem, 2vw, 1.75rem);
+}
+.mural__item { display: grid; gap: 0.45rem; align-content: start; }
+
+/* a capa sobe um fio ao passar o cursor: dá vida sem animação chamativa */
+.mural__item .capa {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  box-shadow: 0 1px 2px rgba(26, 22, 17, 0.08);
+}
+.mural__item:hover .capa {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px -8px rgba(26, 22, 17, 0.35);
+}
+
+.mural__nome {
+  font-family: var(--sans);
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.mural__nome:hover { color: var(--ember); }
+.mural__qtd {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--ink-4);
+}
+
+/* ---------- vitrine da edição atual, na página inicial ---------- */
+
+.vitrine {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: clamp(1.1rem, 3vw, 2rem);
+  align-items: center;
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
+  margin-bottom: 1.75rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+.vitrine .capa {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  box-shadow: 0 2px 6px rgba(26, 22, 17, 0.12);
+}
+.vitrine:hover .capa {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px -10px rgba(26, 22, 17, 0.4);
+}
+.vitrine__texto { display: grid; gap: 0.3rem; }
+.vitrine__ed {
+  font-family: var(--sans);
+  font-size: var(--step-2);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+}
+.vitrine__data,
+.vitrine__n {
+  font-family: var(--mono);
+  font-size: var(--step--2);
+  color: var(--ink-3);
+  margin: 0;
+}
+.vitrine__n b { color: var(--ember); font-size: var(--step-0); font-weight: 700; }
+.vitrine__acoes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.85rem 0 0; }
+
+@media (max-width: 560px) {
+  .vitrine { grid-template-columns: minmax(0, 1fr); }
+  .vitrine .capa { max-width: 10rem; }
+}

@@ -4,7 +4,7 @@ import "./globals.css";
 import Masthead from "@/components/Masthead";
 import Banner from "@/components/Banner";
 import SiteFooter from "@/components/SiteFooter";
-import { revista, paginasNav, paginasTodas } from "@/lib/queries";
+import { revista, paginasNav, paginasTodas, panorama, indices } from "@/lib/queries";
 import { usuarioAtual } from "@/lib/auth";
 import { SITE_URL } from "@/lib/text";
 
@@ -82,7 +82,9 @@ const scriptTema = `
 `;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [r, nav, todas, u] = await Promise.all([revista(), paginasNav(), paginasTodas(), usuarioAtual()]);
+  const [r, nav, todas, u, p, idx] = await Promise.all([
+    revista(), paginasNav(), paginasTodas(), usuarioAtual(), panorama(), indices(),
+  ]);
 
   return (
     /* As variaveis das fontes vao no <html>, e nao no <body>: os tokens de
@@ -98,6 +100,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <a href="#conteudo" className="sr">Ir para o conteúdo</a>
         <Banner
+          credenciais={{ artigos: p.artigos, edicoes: p.edicoes, h: idx.h, i10: idx.i10 }}
           titulo={r.title}
           issn={r.issn}
           qualis={r.qualis}

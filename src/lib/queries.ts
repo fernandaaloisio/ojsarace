@@ -83,6 +83,32 @@ export const edicaoPorSlug = cache(async (slug: string) => {
 });
 
 /** Arquivo agrupado por ano, com a contagem usada na barra de cada edicao. */
+/**
+ * Indices bibliometricos do periodico, calculados sobre o que o Crossref
+ * registra. Sao os numeros que a revista usa para se apresentar, e aqui eles
+ * saem do proprio acervo em vez de serem digitados a mao.
+ *
+ *   h  = maior h tal que h artigos tenham ao menos h citacoes
+ *   i10 = quantos artigos passaram de dez citacoes
+ */
+export const indices = cache(async () => {
+  const citados = await db.article.findMany({
+    where: { citationCount: { gt: 0 } },
+    orderBy: { citationCount: "desc" },
+    select: { citationCount: true },
+  });
+
+  let h = 0;
+  for (let i = 0; i < citados.length; i++) {
+    if (citados[i].citationCount >= i + 1) h = i + 1;
+    else break;
+  }
+  const i10 = citados.filter((a) => a.citationCount >= 10).length;
+  const total = citados.reduce((s, a) => s + a.citationCount, 0);
+
+  return { h, i10, citacoes: total, artigosCitados: citados.length };
+});
+
 export const arquivo = cache(async () => {
   const issues = await db.issue.findMany({
     orderBy: [{ rank: "desc" }],

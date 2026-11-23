@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { arquivo, panorama } from "@/lib/queries";
+import { arquivo, panorama, indices } from "@/lib/queries";
+import CapaEdicao from "@/components/CapaEdicao";
+import { revista } from "@/lib/queries";
 import { num } from "@/lib/text";
 
 // Renderizada sob demanda, e não no build: o conteúdo muda quando a editoria
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Arquivo() {
-  const [a, p] = await Promise.all([arquivo(), panorama()]);
+  const [a, p, r, idx] = await Promise.all([arquivo(), panorama(), revista(), indices()]);
 
   return (
     <>
@@ -21,36 +23,38 @@ export default async function Arquivo() {
         <p className="eyebrow">Acervo completo</p>
         <h1>Arquivo de edições</h1>
         <p className="cabeca-pagina__linha">
-          {num(p.edicoes)} edições e {num(p.artigos)} artigos publicados desde {p.anoInicial ?? "2014"}.
-          A largura de cada barra mostra o volume de artigos do fascículo.
+          {num(p.edicoes)} edições e {num(p.artigos)} artigos publicados desde {p.anoInicial ?? "2014"},
+          com {num(idx.citacoes)} citações registradas no Crossref.
         </p>
       </header>
 
-      <section className="shell" style={{ paddingBottom: "clamp(2rem, 5vw, 4rem)" }}>
-        <div className="lombada">
-          {a.anos.map((grupo) => (
-            <div key={grupo.ano} className="lombada__ano">
-              <div className="lombada__rotulo">{grupo.ano || "s.d."}</div>
-              <div className="lombada__edicoes">
-                {grupo.edicoes.map((e) => (
-                  <Link key={e.id} className="volume" href={`/edicao/${e.slug}`}>
-                    <span className="volume__nome">
-                      {e.volume != null ? `v. ${e.volume}` : ""} {e.number != null ? `n. ${e.number}` : ""}
-                    </span>
-                    <span className="volume__trilho">
-                      <span className="volume__preenche"
-                            style={{ width: `${Math.max(1.5, (e._count.articles / a.maior) * 100)}%` }} />
-                    </span>
-                    <span className="volume__qtd">{e._count.articles}</span>
-                  </Link>
-                ))}
-                <p className="mono" style={{ fontSize: "var(--step--2)", color: "var(--ink-4)", marginTop: "0.25rem" }}>
-                  {num(grupo.total)} artigos no ano
-                </p>
-              </div>
+      <section className="shell" style={{ paddingBottom: "clamp(2.5rem, 5vw, 4.5rem)" }}>
+        {a.anos.map((grupo) => (
+          <div key={grupo.ano} className="ano">
+            <div className="ano__cabeca">
+              <h2 className="ano__num">{grupo.ano || "s.d."}</h2>
+              <span className="ano__resumo">
+                {num(grupo.edicoes.length)} {grupo.edicoes.length === 1 ? "edição" : "edições"}
+                <span aria-hidden>·</span>
+                {num(grupo.total)} artigos
+              </span>
             </div>
-          ))}
-        </div>
+
+            <div className="mural">
+              {grupo.edicoes.map((e) => (
+                <article key={e.id} className="mural__item">
+                  <CapaEdicao revista={r.title} label={e.label} ano={e.year}
+                              slug={e.slug} imagem={e.coverUrl} />
+                  <Link className="mural__nome" href={`/edicao/${e.slug}`}>
+                    {e.volume != null ? `v. ${e.volume}` : ""}
+                    {e.number != null ? ` n. ${e.number}` : ""}
+                  </Link>
+                  <span className="mural__qtd">{num(e._count.articles)} artigos</span>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
     </>
   );

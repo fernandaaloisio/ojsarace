@@ -60,21 +60,29 @@ export default async function Home() {
         {/* ---------- edição atual ---------- */}
         {atual && (
           <section style={{ paddingTop: "clamp(2rem, 4vw, 3rem)" }}>
-            <header style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "baseline",
-                             justifyContent: "space-between", marginBottom: "1.5rem" }}>
-              <div>
-                <h2 className="secao-art">Edição atual</h2>
-                <h2 style={{ fontSize: "var(--step-3)" }}>{atual.issue.label}</h2>
+            <h2 className="secao-art">Edição atual</h2>
+
+            {/* A capa da edição aberta, grande, com o que ela traz ao lado.
+                É a vitrine do fascículo corrente, como nas revistas. */}
+            <div className="vitrine">
+              <CapaEdicao revista={r.title} label={atual.issue.label} ano={atual.issue.year}
+                          slug={atual.issue.slug} imagem={atual.issue.coverUrl} />
+              <div className="vitrine__texto">
+                <p className="vitrine__ed">{atual.issue.label}</p>
                 {atual.issue.publishedAt && (
-                  <p className="mono" style={{ color: "var(--ink-3)", marginTop: "0.5rem" }}>
-                    Fechada em {dataLonga(atual.issue.publishedAt)} · {num(atual.artigos.length)} artigos
-                  </p>
+                  <p className="vitrine__data">Fechada em {dataLonga(atual.issue.publishedAt)}</p>
                 )}
+                <p className="vitrine__n">
+                  <b>{num(atual.artigos.length)}</b> artigos nesta edição
+                </p>
+                <p className="vitrine__acoes">
+                  <Link className="btn btn--solid btn--sm" href={`/edicao/${atual.issue.slug}`}>
+                    Ver a edição inteira
+                  </Link>
+                  <Link className="btn btn--quiet btn--sm" href="/arquivo">Acervo</Link>
+                </p>
               </div>
-              <Link className="btn btn--quiet btn--sm" href={`/edicao/${atual.issue.slug}`}>
-                Edição inteira →
-              </Link>
-            </header>
+            </div>
 
             <div className="indice">
               {destaque.map((a, i) => <ItemArtigo key={a.id} artigo={a} ordem={i + 1} />)}
