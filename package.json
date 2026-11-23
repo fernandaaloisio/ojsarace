@@ -25,6 +25,7 @@
     "producao": "node scripts/configurar-producao.mjs"
   },
   "dependencies": {
+    "@netlify/blobs": "11.1.10",
     "@prisma/client": "6.1.0",
     "fast-xml-parser": "4.5.1",
     "next": "15.1.6",
