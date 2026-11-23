@@ -13,3 +13,6 @@ tsconfig.tsbuildinfo
 # gerado por scripts/gerar-esboco.mjs
 esboco-portal.html
 public/esboco.html
+
+# repositorio separado, clonado aqui dentro por engano
+ojs/
